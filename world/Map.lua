@@ -15,14 +15,15 @@ local Map = {
 }
 Map.__index = Map
 
--- Initialize an MxN map of tiles
-function Map:init ()
+function Map:load ()
     if love.filesystem.getInfo(MAP_FILE) then
+    -- Read the map contents from the map save file
         local contents, size = love.filesystem.read(MAP_FILE)
         local tiles, lookup = Serializer.deserializeN(contents, 2)
         self.Tiles = tiles
         self.TilesLookup = lookup
     else
+    -- Or initialize an MxN map of tiles
         local width = love.graphics.getWidth()
         local height = love.graphics.getHeight()
         local id = 1
@@ -84,5 +85,4 @@ function Map:mousemoved (x, y, dx, dy)
     Viewport:mousemoved(x, y, dx, dy)
 end
 
-Map:init()
 return Map

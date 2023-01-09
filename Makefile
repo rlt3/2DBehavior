@@ -1,0 +1,2 @@
+all:
+	./lovec.exe world

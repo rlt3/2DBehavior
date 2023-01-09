@@ -1,6 +1,7 @@
 local Map = require("Map")
 
 function love.load ()
+    Map:load()
 end
 
 function love.keypressed (key)
