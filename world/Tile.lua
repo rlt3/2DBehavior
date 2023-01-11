@@ -16,7 +16,6 @@ function Tile:draw (Viewport)
     -- draw from the viewport's origin
     local x = Viewport.x + self.x
     local y = Viewport.y + self.y
-
     local size = self.size
     love.graphics.line(x, y, x, y + size)
     love.graphics.line(x, y, x + size, y)

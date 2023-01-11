@@ -12,6 +12,7 @@ local RIGHT_MOUSE = 2
 local Map = {
     TilesLookup = {}, -- used to lookup tiles by x/y coordinates
     Tiles = {}, -- holds all current tiles
+    SelectedTile = nil, -- currently selected tile
 }
 Map.__index = Map
 
@@ -53,6 +54,17 @@ function Map:draw ()
     for i, node in ipairs(self.Tiles) do
         node:draw(Viewport)
     end
+
+    if self.SelectedTile ~= nil then
+        love.graphics.setColor(1, 0, 0, 1)
+        local x = Viewport.x + self.SelectedTile.x
+        local y = Viewport.y + self.SelectedTile.y
+        love.graphics.line(x, y, x, y + TILE_SIZE)
+        love.graphics.line(x, y, x + TILE_SIZE, y)
+        love.graphics.line(x + TILE_SIZE, y, x + TILE_SIZE, y + TILE_SIZE)
+        love.graphics.line(x, y + TILE_SIZE, x + TILE_SIZE, y + TILE_SIZE)
+        love.graphics.setColor(1, 1, 1, 1)
+    end
 end
 
 function Map:lookupTile (x, y)
@@ -62,8 +74,9 @@ function Map:lookupTile (x, y)
 
     local n = self.TilesLookup[x][y]
     if n then
-        print(n.id)
+        return n
     end
+    return nil
 end
 
 function Map:mousepressed (x, y, button)
@@ -71,7 +84,10 @@ function Map:mousepressed (x, y, button)
         Viewport:dragStart()
     end
     if button == LEFT_MOUSE then
-        Map:lookupTile(x, y)
+        local n = Map:lookupTile(x, y)
+        if n then
+            self.SelectedTile = n
+        end
     end
 end
 
