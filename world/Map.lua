@@ -1,11 +1,8 @@
+require("Config")
 local Serializer = require("Serializer")
 local Viewport = require("Viewport")
 local Tile = require("Tile")
 
-local MAP_FILE = "map.tiles"
-local TILE_SIZE = 50
-local MAP_WIDTH = 50
-local MAP_HEIGHT = 50
 local LEFT_MOUSE = 1
 local RIGHT_MOUSE = 2
 
@@ -16,61 +13,74 @@ local Map = {
 }
 Map.__index = Map
 
-function Map:load ()
-    if love.filesystem.getInfo(MAP_FILE) then
-    -- Read the map contents from the map save file
-        local contents, size = love.filesystem.read(MAP_FILE)
-        local tiles, lookup = Serializer.deserializeN(contents, 2)
-        self.Tiles = tiles
-        self.TilesLookup = lookup
+function Map:init ()
+    if love.filesystem.getInfo(Config.MapFile) then
+        Map:load()
     else
-    -- Or initialize an MxN map of tiles
-        local width = love.graphics.getWidth()
-        local height = love.graphics.getHeight()
-        local id = 1
-        for x = 0, (MAP_WIDTH * TILE_SIZE) - TILE_SIZE, TILE_SIZE do
-            if self.TilesLookup[x] == nil then
-                self.TilesLookup[x] = {}
-            end
-            for y = 0, (MAP_HEIGHT * TILE_SIZE) - TILE_SIZE, TILE_SIZE do
-                local n = Tile.new(id, x, y, TILE_SIZE)
-                table.insert(self.Tiles, n)
-                self.TilesLookup[x][y] = n
-                id = id + 1
-            end
+        Map:create()
+    end
+end
+
+function Map:load ()
+    local contents, size = love.filesystem.read(Config.MapFile)
+    local tiles, lookup = Serializer.deserializeN(contents, 2)
+    self.Tiles = tiles
+    self.TilesLookup = lookup
+end
+
+function Map:create ()
+    print(Config.TileSize)
+    local width = love.graphics.getWidth()
+    local height = love.graphics.getHeight()
+    local id = 1
+    for x = 0, (Config.MapWidth * Config.TileSize) - Config.TileSize, Config.TileSize do
+        if self.TilesLookup[x] == nil then
+            self.TilesLookup[x] = {}
+        end
+        for y = 0, (Config.MapHeight * Config.TileSize) - Config.TileSize, Config.TileSize do
+            local n = Tile.new(id, x, y, Config.TileSize)
+            table.insert(self.Tiles, n)
+            self.TilesLookup[x][y] = n
+            id = id + 1
         end
     end
 end
 
 function Map:save ()
+    -- NOTE: This serializer copies deeply. Meaning it copies functions, etc.
+    -- Ideally, we only want data here, not implementation. For example, I've
+    -- changed the 'Tile:draw' method and because it was serialized, I was not
+    -- able to see changes to it without loading from a forced-saved.
     local data = Serializer.serialize(self.Tiles, self.TilesLookup)
-    local success, message = love.filesystem.write(MAP_FILE, data)
+    local success, message = love.filesystem.write(Config.MapFile, data)
     if not success then 
         error("Map data could not be saved! " .. message)
     end
 end
 
 function Map:draw ()
-    for i, node in ipairs(self.Tiles) do
-        node:draw(Viewport)
+    for i, tile in ipairs(self.Tiles) do
+        if Viewport:isTileVisible(tile) then
+            tile:draw(Viewport)
+        end
     end
 
     if self.SelectedTile ~= nil then
         love.graphics.setColor(1, 0, 0, 1)
         local x = Viewport.x + self.SelectedTile.x
         local y = Viewport.y + self.SelectedTile.y
-        love.graphics.line(x, y, x, y + TILE_SIZE)
-        love.graphics.line(x, y, x + TILE_SIZE, y)
-        love.graphics.line(x + TILE_SIZE, y, x + TILE_SIZE, y + TILE_SIZE)
-        love.graphics.line(x, y + TILE_SIZE, x + TILE_SIZE, y + TILE_SIZE)
+        love.graphics.line(x, y, x, y + Config.TileSize)
+        love.graphics.line(x, y, x + Config.TileSize, y)
+        love.graphics.line(x + Config.TileSize, y, x + Config.TileSize, y + Config.TileSize)
+        love.graphics.line(x, y + Config.TileSize, x + Config.TileSize, y + Config.TileSize)
         love.graphics.setColor(1, 1, 1, 1)
     end
 end
 
 function Map:lookupTile (x, y)
     x, y = Viewport:screenToWorld(x, y)
-    x = x - (x % TILE_SIZE)
-    y = y - (y % TILE_SIZE)
+    x = x - (x % Config.TileSize)
+    y = y - (y % Config.TileSize)
 
     local n = self.TilesLookup[x][y]
     if n then

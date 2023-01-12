@@ -3,4 +3,6 @@ function love.conf(t)
     t.modules.joystick = false
     -- Enables text output to the console
     t.console = true
+
+    t.window.fullscreen = true
 end

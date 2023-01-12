@@ -24,6 +24,20 @@ function Viewport:screenToWorld (x, y)
     return x - Viewport.x, y - Viewport.y
 end
 
+-- Convert world coordinates to screen coordinates
+function Viewport:translateOrigin (x, y)
+    return self.x + x, self.y + y
+end
+
+function Viewport:isTileVisible (tile)
+    local x, y = self:translateOrigin(tile.x, tile.y)
+
+    return self.x < x + tile.size
+       and self.x + self.width > x
+       and self.y < y + tile.size
+       and self.y + self.height > y
+end
+
 function Viewport:mousemoved (x, y, dx, dy)
     if self.isDragging then
         self.x = self.x + dx
