@@ -30,12 +30,14 @@ function Viewport:translateOrigin (x, y)
 end
 
 function Viewport:isTileVisible (tile)
+    -- Translate the origin and then check if that translated coordinate is
+    -- within the viewport which is always with (0,0) at the top-left and
+    -- is the window's width & height
     local x, y = self:translateOrigin(tile.x, tile.y)
-
-    return self.x < x + tile.size
-       and self.x + self.width > x
-       and self.y < y + tile.size
-       and self.y + self.height > y
+    return 0 < x + tile.size
+       and self.width > x
+       and 0 < y + tile.size
+       and self.height > y
 end
 
 function Viewport:mousemoved (x, y, dx, dy)
