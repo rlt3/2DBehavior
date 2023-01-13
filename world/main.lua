@@ -8,13 +8,13 @@ package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 local imgui = require "cimgui"
 
 
-local IMG = nil
+local SPRITESHEET = nil
 
 function love.load ()
     Map:init()
     imgui.love.Init()
 
-    IMG = love.graphics.newImage("assets/terrain_atlas.png")
+    SPRITESHEET = love.graphics.newImage("assets/terrain_atlas.png")
 end
 
 function love.quit ()
@@ -22,21 +22,49 @@ function love.quit ()
     return imgui.love.Shutdown()
 end
 
-function DrawTileButton (spritesheet, x, y)
-    local dim = imgui.ImVec2_Float(spritesheet:getDimensions())
+Tiles = {
+    selected = "grass1",
+    data = {
+        { id = "grass1", x =  0, y = 800 },
+        { id = "grass2", x = 32, y = 800 },
+        { id = "grass3", x = 64, y = 800 },
+        { id = "grass4", x = 96, y = 800 },
+    }
+}
 
-    -- size of the button
-	local size = imgui.ImVec2_Float(Config.TileSize, Config.TileSize)
-    -- top-left coordinates, divided by dimensions to force range [0, 1]
-	local uv0 = imgui.ImVec2_Float(x / dim.x, y / dim.y)
-    -- bot-right coordinates, divided, again, to force range into [0, 1]
-	local uv1 = imgui.ImVec2_Float((x + Config.TileSize) / dim.x, (y + Config.TileSize) / dim.y)
-    -- Black background
-	local bg_col = imgui.ImVec4_Float(0, 0, 0, 1)
-    -- No tint
-	local tint_col = imgui.ImVec4_Float(1, 1, 1, 1)
+function DrawTileSelection ()
+    local dim = imgui.ImVec2_Float(SPRITESHEET:getDimensions())
 
-    imgui.ImageButton("btn", IMG, size, uv0, uv1, bg_col, tint_col)
+    for i, tile in ipairs(Tiles.data) do
+        -- size of the button
+        local size = imgui.ImVec2_Float(Config.TileSize, Config.TileSize)
+        -- top-left coordinates, divided by dimensions to force range [0, 1]
+        local uv0 = imgui.ImVec2_Float(tile.x / dim.x, tile.y / dim.y)
+        -- bot-right coordinates, divided, again, to force range into [0, 1]
+        local uv1 = imgui.ImVec2_Float((tile.x + Config.TileSize) / dim.x, (tile.y + Config.TileSize) / dim.y)
+        -- Black background
+        local bg_col = imgui.ImVec4_Float(0, 0, 0, 1)
+        -- No tint
+        local tint_col = imgui.ImVec4_Float(1, 1, 1, 1)
+
+        imgui.PushID_Str(tile.id)
+        if tile.id == Tiles.selected then
+            imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, imgui.ImVec4_Float(0, 1, 0, 1))
+        else
+            imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, imgui.ImVec4_Float(0, 0, 0, 0))
+        end
+        imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonActive, imgui.ImVec4_Float(0, 1, 0, 1))
+        imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonHovered, imgui.ImVec4_Float(1, 1, 1, 1))
+
+        if imgui.ImageButton("btn", SPRITESHEET, size, uv0, uv1, bg_col, tint_col) then
+            Tiles.selected = tile.id
+            print(tile.id)
+        end
+
+        imgui.PopStyleColor(3)
+        imgui.PopID()
+        imgui.SameLine()
+    end
 end
 
 function DrawEntityWindow ()
@@ -53,10 +81,7 @@ function DrawEntityWindow ()
 
     -- TODO: should be a specific sprite loaded & handled by some data-driven
     -- config, e.g. Tile["grass"]
-    DrawTileButton(IMG, 0, 800)
-    DrawTileButton(IMG, 32, 800)
-    DrawTileButton(IMG, 64, 800)
-    DrawTileButton(IMG, 96, 800)
+    DrawTileSelection()
     
     imgui.End()
 end
