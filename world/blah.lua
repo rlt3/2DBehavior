@@ -19,13 +19,11 @@ function Viewport:dragEnd ()
     self.isDragging = false
 end
 
--- Convert screen coordinates to world coordinates
 function Viewport:screenToWorld (x, y)
     return x - Viewport.x, y - Viewport.y
 end
 
--- Convert world coordinates to screen coordinates
-function Viewport:translateOrigin (x, y)
+function Viewport:worldToScreen (x, y)
     return self.x + x, self.y + y
 end
 
@@ -33,7 +31,7 @@ function Viewport:isTileVisible (tile)
     -- Translate the origin and then check if that translated coordinate is
     -- within the viewport which is always with (0,0) at the top-left and
     -- is the window's width & height
-    local x, y = self:translateOrigin(tile.x, tile.y)
+    local x, y = self:worldToScreen(tile.x, tile.y)
     return 0 < x + tile.size
        and self.width > x
        and 0 < y + tile.size

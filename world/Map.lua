@@ -58,23 +58,30 @@ function Map:save ()
     end
 end
 
+function Map:drawSelection ()
+    if self.SelectedTile == nil then
+        error("No selection to draw!")
+    end
+    love.graphics.setColor(1, 0, 0, 1)
+    local x = Viewport.x + self.SelectedTile.x
+    local y = Viewport.y + self.SelectedTile.y
+    love.graphics.line(x, y, x, y + Config.TileSize)
+    love.graphics.line(x, y, x + Config.TileSize, y)
+    love.graphics.line(x + Config.TileSize, y, x + Config.TileSize, y + Config.TileSize)
+    love.graphics.line(x, y + Config.TileSize, x + Config.TileSize, y + Config.TileSize)
+    love.graphics.setColor(1, 1, 1, 1)
+end
+
 function Map:draw ()
     for i, tile in ipairs(self.Tiles) do
         if Viewport:isTileVisible(tile) then
             tile:draw(Viewport)
         end
     end
+end
 
-    if self.SelectedTile ~= nil then
-        love.graphics.setColor(1, 0, 0, 1)
-        local x = Viewport.x + self.SelectedTile.x
-        local y = Viewport.y + self.SelectedTile.y
-        love.graphics.line(x, y, x, y + Config.TileSize)
-        love.graphics.line(x, y, x + Config.TileSize, y)
-        love.graphics.line(x + Config.TileSize, y, x + Config.TileSize, y + Config.TileSize)
-        love.graphics.line(x, y + Config.TileSize, x + Config.TileSize, y + Config.TileSize)
-        love.graphics.setColor(1, 1, 1, 1)
-    end
+function Map:hasSelection ()
+    return self.SelectedTile ~= nil
 end
 
 function Map:lookupTile (x, y)

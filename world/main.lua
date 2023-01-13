@@ -35,6 +35,11 @@ Tiles = {
 function DrawTileSelection ()
     local dim = imgui.ImVec2_Float(SPRITESHEET:getDimensions())
 
+    local red = imgui.ImVec4_Float(0, 1, 0, 1)
+    local black = imgui.ImVec4_Float(0, 0, 0, 0)
+    local green = imgui.ImVec4_Float(0, 1, 0, 1)
+    local white = imgui.ImVec4_Float(1, 1, 1, 1)
+
     for i, tile in ipairs(Tiles.data) do
         -- size of the button
         local size = imgui.ImVec2_Float(Config.TileSize, Config.TileSize)
@@ -49,12 +54,12 @@ function DrawTileSelection ()
 
         imgui.PushID_Str(tile.id)
         if tile.id == Tiles.selected then
-            imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, imgui.ImVec4_Float(0, 1, 0, 1))
+            imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, green)
         else
-            imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, imgui.ImVec4_Float(0, 0, 0, 0))
+            imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, black)
         end
-        imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonActive, imgui.ImVec4_Float(0, 1, 0, 1))
-        imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonHovered, imgui.ImVec4_Float(1, 1, 1, 1))
+        imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonActive, green)
+        imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonHovered, white)
 
         if imgui.ImageButton("btn", SPRITESHEET, size, uv0, uv1, bg_col, tint_col) then
             Tiles.selected = tile.id
@@ -67,15 +72,19 @@ function DrawTileSelection ()
     end
 end
 
-function DrawEntityWindow ()
+function DrawEntityWindow (tile)
     local flags = imgui.ImGuiWindowFlags_None
                 + imgui.ImGuiWindowFlags_NoResize
                 + imgui.ImGuiWindowFlags_NoScrollbar
                 + imgui.ImGuiWindowFlags_NoTitleBar
                 + imgui.ImGuiWindowFlags_NoCollapse
                 + imgui.ImGuiWindowFlags_NoNav
-    imgui.SetNextWindowPos(imgui.ImVec2_Float(0, 0), imgui.ImGuiCond_Once)
-    imgui.SetNextWindowSize(imgui.ImVec2_Float(400, 600), imgui.ImGuiCond_Once)
+
+    local pos  = imgui.ImVec2_Float(Viewport:worldToScreen(tile.x, tile.y))
+    local size = imgui.ImVec2_Float(Viewport:worldToScreen(400, 600))
+
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Once)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Once)
 
     imgui.Begin("Entity Menu", nil, flags)
 
@@ -90,7 +99,10 @@ function love.draw ()
     Map:draw()
 
     --imgui.ShowDemoWindow()
-    DrawEntityWindow()
+    if Map:hasSelection() then
+        Map:drawSelection()
+        DrawEntityWindow(Map.SelectedTile)
+    end
 
     imgui.Render()
     imgui.love.RenderDrawLists()
