@@ -1,20 +1,16 @@
 require("Config")
 
 local Map = require("Map")
+local Viewport = require("Viewport")
 
 local lib_path = love.filesystem.getWorkingDirectory()
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 local imgui = require "cimgui"
 
-
-local SPRITESHEET = nil
-
 function love.load ()
     Map:init()
     imgui.love.Init()
-
-    SPRITESHEET = love.graphics.newImage("assets/terrain_atlas.png")
 end
 
 function love.quit ()
@@ -22,25 +18,23 @@ function love.quit ()
     return imgui.love.Shutdown()
 end
 
-Tiles = {
+TilesMenu = {
     selected = "grass1",
-    data = {
-        { id = "grass1", x =  0, y = 800 },
-        { id = "grass2", x = 32, y = 800 },
-        { id = "grass3", x = 64, y = 800 },
-        { id = "grass4", x = 96, y = 800 },
-    }
 }
 
-function DrawTileSelection ()
-    local dim = imgui.ImVec2_Float(SPRITESHEET:getDimensions())
+function DrawTileMenu (selectedTile, isNewSelection)
+    if isNewSelection then
+        TilesMenu.selected = selectedTile.tile
+    end
+
+    local dim = imgui.ImVec2_Float(Config.Spritesheet:getDimensions())
 
     local red = imgui.ImVec4_Float(0, 1, 0, 1)
     local black = imgui.ImVec4_Float(0, 0, 0, 0)
     local green = imgui.ImVec4_Float(0, 1, 0, 1)
     local white = imgui.ImVec4_Float(1, 1, 1, 1)
 
-    for i, tile in ipairs(Tiles.data) do
+    for i, tile in ipairs(Config.Tiles) do
         -- size of the button
         local size = imgui.ImVec2_Float(Config.TileSize, Config.TileSize)
         -- top-left coordinates, divided by dimensions to force range [0, 1]
@@ -53,7 +47,7 @@ function DrawTileSelection ()
         local tint_col = imgui.ImVec4_Float(1, 1, 1, 1)
 
         imgui.PushID_Str(tile.id)
-        if tile.id == Tiles.selected then
+        if tile.id == TilesMenu.selected then
             imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, green)
         else
             imgui.PushStyleColor_Vec4(imgui.ImGuiCol_Button, black)
@@ -61,8 +55,9 @@ function DrawTileSelection ()
         imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonActive, green)
         imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonHovered, white)
 
-        if imgui.ImageButton("btn", SPRITESHEET, size, uv0, uv1, bg_col, tint_col) then
-            Tiles.selected = tile.id
+        if imgui.ImageButton("btn", Config.Spritesheet, size, uv0, uv1, bg_col, tint_col) then
+            TilesMenu.selected = tile.id
+            selectedTile.tile = tile.id
             print(tile.id)
         end
 
@@ -72,7 +67,7 @@ function DrawTileSelection ()
     end
 end
 
-function DrawEntityWindow (tile)
+function DrawEntityWindow (tile, isNewSelection)
     local flags = imgui.ImGuiWindowFlags_None
                 + imgui.ImGuiWindowFlags_NoResize
                 + imgui.ImGuiWindowFlags_NoScrollbar
@@ -80,17 +75,16 @@ function DrawEntityWindow (tile)
                 + imgui.ImGuiWindowFlags_NoCollapse
                 + imgui.ImGuiWindowFlags_NoNav
 
-    local pos  = imgui.ImVec2_Float(Viewport:worldToScreen(tile.x, tile.y))
-    local size = imgui.ImVec2_Float(Viewport:worldToScreen(400, 600))
+    -- attempt to draw the menu at the selected tile
+    local pos  = imgui.ImVec2_Float(Viewport:worldToScreen(tile.x + tile.size, tile.y))
+    local size = imgui.ImVec2_Float(Viewport:worldToScreen(400, 300))
 
-    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Once)
-    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Once)
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Always)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
 
     imgui.Begin("Entity Menu", nil, flags)
 
-    -- TODO: should be a specific sprite loaded & handled by some data-driven
-    -- config, e.g. Tile["grass"]
-    DrawTileSelection()
+    DrawTileMenu(tile, isNewSelection)
     
     imgui.End()
 end
@@ -101,7 +95,7 @@ function love.draw ()
     --imgui.ShowDemoWindow()
     if Map:hasSelection() then
         Map:drawSelection()
-        DrawEntityWindow(Map.SelectedTile)
+        DrawEntityWindow(Map.SelectedTile, Map:isSelectionNew())
     end
 
     imgui.Render()

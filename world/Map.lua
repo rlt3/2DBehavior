@@ -10,6 +10,9 @@ local Map = {
     TilesLookup = {}, -- used to lookup tiles by x/y coordinates
     Tiles = {}, -- holds all current tiles
     SelectedTile = nil, -- currently selected tile
+    OldSelected = nil, -- book keep for tracking selection changes
+    TilesetBatch = nil,
+    TileQuads = nil
 }
 Map.__index = Map
 
@@ -17,8 +20,18 @@ function Map:init ()
     if love.filesystem.getInfo(Config.MapFile) then
         Map:load()
     else
-        Map:create()
+        self:create()
     end
+
+    self.TileQuads = {}
+    local sz = Config.TileSize
+    local w = Config.Spritesheet:getWidth()
+    local h = Config.Spritesheet:getHeight()
+    for i,tile in ipairs(Config.Tiles) do
+        self.TileQuads[tile.id] = love.graphics.newQuad(tile.x, tile.y, sz, sz, w, h)
+    end
+
+    self.TilesetBatch = love.graphics.newSpriteBatch(Config.Spritesheet, Config.TileSize * Config.TileSize)
 end
 
 function Map:load ()
@@ -58,6 +71,14 @@ function Map:save ()
     end
 end
 
+function Map:isSelectionNew ()
+    return self.SelectedTile ~= self.OldSelected
+end
+
+function Map:hasSelection ()
+    return self.SelectedTile ~= nil
+end
+
 function Map:drawSelection ()
     if self.SelectedTile == nil then
         error("No selection to draw!")
@@ -73,15 +94,14 @@ function Map:drawSelection ()
 end
 
 function Map:draw ()
+    self.TilesetBatch:clear()
     for i, tile in ipairs(self.Tiles) do
         if Viewport:isTileVisible(tile) then
-            tile:draw(Viewport)
+            tile:draw(self.TilesetBatch, self.TileQuads, Viewport)
         end
     end
-end
-
-function Map:hasSelection ()
-    return self.SelectedTile ~= nil
+    self.TilesetBatch:flush()
+    love.graphics.draw(self.TilesetBatch)
 end
 
 function Map:lookupTile (x, y)
@@ -103,6 +123,7 @@ function Map:mousepressed (x, y, button)
     if button == LEFT_MOUSE then
         local n = Map:lookupTile(x, y)
         if n then
+            self.OldSelected = self.SelectedTile
             self.SelectedTile = n
         end
     end
