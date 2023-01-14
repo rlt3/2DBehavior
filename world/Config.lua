@@ -2,7 +2,15 @@ Config = {
     MapFile = "map.tiles",
     MapWidth = 100,
     MapHeight = 100,
-    Spritesheet = love.graphics.newImage("assets/terrain_atlas.png"),
+    Charactersheet = love.graphics.newImage("assets/character.png"),
+    CharacterSize = 64,
+    CharacterAnimations = {
+        { id = "attackUp",    range = "1-8", row = 5, speed = 0.1 },
+        { id = "attackLeft",  range = "1-8", row = 6, speed = 0.1 },
+        { id = "attackDown",  range = "1-8", row = 7, speed = 0.1 },
+        { id = "attackRight", range = "1-8", row = 8, speed = 0.1 },
+    },
+    Tilesheet = love.graphics.newImage("assets/terrain_atlas.png"),
     TileSize = 32,
     Tiles = {
         { id = "grass1", x =  0, y = 800 },

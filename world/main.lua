@@ -1,15 +1,30 @@
+local anim8 = require 'libraries/anim8'
+
 local ffi = require 'ffi'
 require("Config")
 
 local Map = require("Map")
 local Viewport = require("Viewport")
 
-local lib_path = love.filesystem.getWorkingDirectory()
+local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
-local imgui = require "cimgui"
+local imgui = require "libraries/cimgui"
+
+local character = {
+    current = 1,
+    animations = {}
+}
 
 function love.load ()
+    local g = anim8.newGrid(Config.CharacterSize, Config.CharacterSize, Config.Charactersheet:getWidth(), Config.Charactersheet:getHeight())
+
+    for id,data in ipairs(Config.CharacterAnimations) do
+        -- create animations which automatically pause at the end
+        local animation = anim8.newAnimation(g(data.range, data.row), data.speed, "pauseAtEnd")
+        character.animations[id] = animation
+    end
+
     Map:init()
     imgui.love.Init()
 end
@@ -50,7 +65,7 @@ function DrawTilesMenu (selectedTile, isNewSelection)
     local black = imgui.ImVec4_Float(0, 0, 0, 0)
     local green = imgui.ImVec4_Float(0, 1, 0, 1)
     local white = imgui.ImVec4_Float(1, 1, 1, 1)
-    local dim = imgui.ImVec2_Float(Config.Spritesheet:getDimensions())
+    local dim = imgui.ImVec2_Float(Config.Tilesheet:getDimensions())
 
     for i, tile in ipairs(Config.Tiles) do
         -- size of the button
@@ -73,7 +88,7 @@ function DrawTilesMenu (selectedTile, isNewSelection)
         imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonActive, green)
         imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonHovered, white)
 
-        if imgui.ImageButton("btn", Config.Spritesheet, size, uv0, uv1, bg_col, tint_col) then
+        if imgui.ImageButton("btn", Config.Tilesheet, size, uv0, uv1, bg_col, tint_col) then
             TilesMenu.selected = tile.id
             selectedTile.tile = tile.id
         end
@@ -108,11 +123,25 @@ function love.draw ()
         end
     end
 
+    local animation = character.animations[character.current]
+    animation:draw(Config.Charactersheet, 196, 196)
+
     imgui.Render()
     imgui.love.RenderDrawLists()
 end
 
 function love.update (dt)
+    local animation = character.animations[character.current]
+    if animation.status == "paused" then
+        -- increment & rollover the counter
+        character.current = (character.current % #Config.CharacterAnimations) + 1
+        animation = character.animations[character.current]
+        -- animation pauses at end, so reset the frame to start and unpause it
+        animation:gotoFrame(1)
+        animation:resume()
+    end
+    animation:update(dt)
+
     imgui.love.Update(dt)
     imgui.NewFrame()
 end

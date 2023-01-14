@@ -25,13 +25,13 @@ function Map:init ()
 
     self.TileQuads = {}
     local sz = Config.TileSize
-    local w = Config.Spritesheet:getWidth()
-    local h = Config.Spritesheet:getHeight()
+    local w = Config.Tilesheet:getWidth()
+    local h = Config.Tilesheet:getHeight()
     for i,tile in ipairs(Config.Tiles) do
         self.TileQuads[tile.id] = love.graphics.newQuad(tile.x, tile.y, sz, sz, w, h)
     end
 
-    self.TilesetBatch = love.graphics.newSpriteBatch(Config.Spritesheet, Config.TileSize * Config.TileSize)
+    self.TilesetBatch = love.graphics.newSpriteBatch(Config.Tilesheet, Config.TileSize * Config.TileSize)
 end
 
 function Map:load ()
