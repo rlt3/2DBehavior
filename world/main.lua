@@ -20,7 +20,9 @@ function love.load ()
     local g = anim8.newGrid(Config.CharacterSize, Config.CharacterSize, Config.Charactersheet:getWidth(), Config.Charactersheet:getHeight())
 
     for id,data in ipairs(Config.CharacterAnimations) do
-        -- create animations which automatically pause at the end
+        -- create animations which automatically pause at the end. NOTE: this
+        -- is distinctly different than the method `animation:pauseAtEnd` which
+        -- causes the animation to move to the last frame and then pause.
         local animation = anim8.newAnimation(g(data.range, data.row), data.speed, "pauseAtEnd")
         character.animations[id] = animation
     end

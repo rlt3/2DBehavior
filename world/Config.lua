@@ -9,6 +9,13 @@ Config = {
         { id = "attackLeft",  range = "1-8", row = 6, speed = 0.1 },
         { id = "attackDown",  range = "1-8", row = 7, speed = 0.1 },
         { id = "attackRight", range = "1-8", row = 8, speed = 0.1 },
+
+        { id = "walkUp",    range = "1-9", row =  9, speed = 0.1 },
+        { id = "walkLeft",  range = "1-9", row = 10, speed = 0.1 },
+        { id = "walkDown",  range = "1-9", row = 11, speed = 0.1 },
+        { id = "walkRight", range = "1-9", row = 12, speed = 0.1 },
+
+        { id = "death",     range = "1-6", row = 21, speed = 0.1 },
     },
     Tilesheet = love.graphics.newImage("assets/terrain_atlas.png"),
     TileSize = 32,
