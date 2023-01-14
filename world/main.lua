@@ -1,3 +1,4 @@
+local ffi = require 'ffi'
 require("Config")
 
 local Map = require("Map")
@@ -19,20 +20,37 @@ function love.quit ()
 end
 
 TilesMenu = {
+    isOpen = ffi.new("bool[1]", true),
     selected = "grass1",
 }
 
-function DrawTileMenu (selectedTile, isNewSelection)
+function DrawTilesMenu (selectedTile, isNewSelection)
+    -- TODO: The title bar color changes if we move the menu before pressing
+    -- close
     if isNewSelection then
         TilesMenu.selected = selectedTile.tile
     end
 
-    local dim = imgui.ImVec2_Float(Config.Spritesheet:getDimensions())
+    local flags = imgui.ImGuiWindowFlags_None
+                + imgui.ImGuiWindowFlags_NoResize
+                + imgui.ImGuiWindowFlags_NoScrollbar
+                + imgui.ImGuiWindowFlags_NoCollapse
+                + imgui.ImGuiWindowFlags_NoNav
+                --+ imgui.ImGuiWindowFlags_NoTitleBar
+
+    -- draw the menu at the selected tile
+    local pos  = imgui.ImVec2_Float(Viewport:worldToScreen(selectedTile.x + selectedTile.size, selectedTile.y))
+    local size = imgui.ImVec2_Float(400, 300)
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Always)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
+
+    imgui.Begin("Tile Menu", TilesMenu.isOpen, flags)
 
     local red = imgui.ImVec4_Float(0, 1, 0, 1)
     local black = imgui.ImVec4_Float(0, 0, 0, 0)
     local green = imgui.ImVec4_Float(0, 1, 0, 1)
     local white = imgui.ImVec4_Float(1, 1, 1, 1)
+    local dim = imgui.ImVec2_Float(Config.Spritesheet:getDimensions())
 
     for i, tile in ipairs(Config.Tiles) do
         -- size of the button
@@ -58,35 +76,25 @@ function DrawTileMenu (selectedTile, isNewSelection)
         if imgui.ImageButton("btn", Config.Spritesheet, size, uv0, uv1, bg_col, tint_col) then
             TilesMenu.selected = tile.id
             selectedTile.tile = tile.id
-            print(tile.id)
         end
 
         imgui.PopStyleColor(3)
         imgui.PopID()
         imgui.SameLine()
     end
-end
 
-function DrawEntityWindow (tile, isNewSelection)
-    local flags = imgui.ImGuiWindowFlags_None
-                + imgui.ImGuiWindowFlags_NoResize
-                + imgui.ImGuiWindowFlags_NoScrollbar
-                + imgui.ImGuiWindowFlags_NoTitleBar
-                + imgui.ImGuiWindowFlags_NoCollapse
-                + imgui.ImGuiWindowFlags_NoNav
+    imgui.NewLine()
+    if imgui.Button("Clear") then
+        selectedTile.tile = nil
+    end
 
-    -- attempt to draw the menu at the selected tile
-    local pos  = imgui.ImVec2_Float(Viewport:worldToScreen(tile.x + tile.size, tile.y))
-    local size = imgui.ImVec2_Float(Viewport:worldToScreen(400, 300))
-
-    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Always)
-    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
-
-    imgui.Begin("Entity Menu", nil, flags)
-
-    DrawTileMenu(tile, isNewSelection)
-    
     imgui.End()
+
+    local shouldClose = not TilesMenu.isOpen[0]
+    if shouldClose then
+        TilesMenu.isOpen[0] = true
+    end
+    return shouldClose
 end
 
 function love.draw ()
@@ -95,7 +103,9 @@ function love.draw ()
     --imgui.ShowDemoWindow()
     if Map:hasSelection() then
         Map:drawSelection()
-        DrawEntityWindow(Map.SelectedTile, Map:isSelectionNew())
+        if DrawTilesMenu(Map.SelectedTile, Map:isSelectionNew()) then
+            Map:clearSelection()
+        end
     end
 
     imgui.Render()

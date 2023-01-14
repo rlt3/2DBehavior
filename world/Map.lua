@@ -79,6 +79,10 @@ function Map:hasSelection ()
     return self.SelectedTile ~= nil
 end
 
+function Map:clearSelection ()
+    self.SelectedTile = nil
+end
+
 function Map:drawSelection ()
     if self.SelectedTile == nil then
         error("No selection to draw!")
