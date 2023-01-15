@@ -1,31 +1,18 @@
-local anim8 = require 'libraries/anim8'
-
-local ffi = require 'ffi'
 require("Config")
-
 local Map = require("Map")
+local Entity = require("Entity")
 local Viewport = require("Viewport")
 
 local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 local imgui = require "libraries/cimgui"
+local ffi = require 'ffi'
 
-local character = {
-    current = 1,
-    animations = {}
-}
+local character
 
 function love.load ()
-    local g = anim8.newGrid(Config.CharacterSize, Config.CharacterSize, Config.Charactersheet:getWidth(), Config.Charactersheet:getHeight())
-
-    for id,data in ipairs(Config.CharacterAnimations) do
-        -- create animations which automatically pause at the end. NOTE: this
-        -- is distinctly different than the method `animation:pauseAtEnd` which
-        -- causes the animation to move to the last frame and then pause.
-        local animation = anim8.newAnimation(g(data.range, data.row), data.speed, "pauseAtEnd")
-        character.animations[id] = animation
-    end
+    character = Entity.new(196, 196)
 
     Map:init()
     imgui.love.Init()
@@ -115,34 +102,27 @@ function DrawTilesMenu (selectedTile, isNewSelection)
 end
 
 function love.draw ()
-    Map:draw()
-
-    --imgui.ShowDemoWindow()
+    -- Map is the base layer
+    -- Map controls tiles and thus should control what is navigable or not
+    Map:draw(Viewport)
     if Map:hasSelection() then
-        Map:drawSelection()
+        Map:drawSelection(Viewport)
         if DrawTilesMenu(Map.SelectedTile, Map:isSelectionNew()) then
             Map:clearSelection()
         end
     end
 
-    local animation = character.animations[character.current]
-    animation:draw(Config.Charactersheet, 196, 196)
+    -- Next comes our entities. This includes characters and interactables,
+    -- such as chests, farmable land, doors, etc.
+    character:draw(Viewport)
 
+    -- Finally, the UI comes last as we expect that to be on top
     imgui.Render()
     imgui.love.RenderDrawLists()
 end
 
 function love.update (dt)
-    local animation = character.animations[character.current]
-    if animation.status == "paused" then
-        -- increment & rollover the counter
-        character.current = (character.current % #Config.CharacterAnimations) + 1
-        animation = character.animations[character.current]
-        -- animation pauses at end, so reset the frame to start and unpause it
-        animation:gotoFrame(1)
-        animation:resume()
-    end
-    animation:update(dt)
+    character:update(dt)
 
     imgui.love.Update(dt)
     imgui.NewFrame()
