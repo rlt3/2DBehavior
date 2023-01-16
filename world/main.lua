@@ -173,6 +173,7 @@ function DrawTopMenu ()
 
     imgui.Begin("Main Menu", nil, flags)
 
+    -- handle specific interactions for each button
     if TopMenu.state == "open" then
         local status = DrawFileSystemDialog("Select the file to open", "File selected:", "Open", "Cancel")
         if status == FileSystemDialog.Ok then
@@ -180,16 +181,23 @@ function DrawTopMenu ()
         elseif status == FileSystemDialog.Cancel then
             TopMenu.state = "inactive"
         end
-    else
-        if imgui.BeginMainMenuBar() then
-            if imgui.BeginMenu("File") then
-                if imgui.MenuItem_Bool("New") then
-                end
-                if imgui.MenuItem_Bool("Open", "Ctrl+O") then
-                    TopMenu.state = "open"
-                end
+    end
+
+    -- draw the main menu. while there's work being done, disable this menu
+    if TopMenu.state ~= "inactive" then
+        imgui.BeginDisabled()
+    end
+    if imgui.BeginMainMenuBar() then
+        if imgui.BeginMenu("File") then
+            if imgui.MenuItem_Bool("New") then
+            end
+            if imgui.MenuItem_Bool("Open", "Ctrl+O") then
+                TopMenu.state = "open"
             end
         end
+    end
+    if TopMenu.state ~= "inactive" then
+        imgui.EndDisabled()
     end
 
     imgui.PopStyleVar(1)
