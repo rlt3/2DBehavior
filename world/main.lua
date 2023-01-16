@@ -68,7 +68,9 @@ function DrawTilesMenu (selectedTile, isNewSelection)
     -- draw the menu at the selected tile
     local pos  = imgui.ImVec2_Float(Viewport:worldToScreen(selectedTile.x + selectedTile.size, selectedTile.y))
     local size = imgui.ImVec2_Float(400, 300)
-    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Always)
+    -- allow the window to be moved wherever and have it remember that position
+    -- but always set the size and it cannot be resized
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Once)
     imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
 
     imgui.Begin("Tile Menu", TilesMenu.isOpen, flags)
