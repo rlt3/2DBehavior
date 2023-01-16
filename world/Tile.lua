@@ -1,20 +1,29 @@
 local Tile = {}
 Tile.__index = Tile
 
-function Tile.new (id, x, y, size, tile)
+function Tile.new (id, x, y, size)
     local n = {
         id = id,
         x = x,
         y = y,
         size = size,
-        tile = tile, -- can be nil
+        isWalkable = false,
+        tile = nil,
     }
     n = setmetatable(n, Tile)
     return n
 end
 
+function Tile.deserialize (t)
+    return setmetatable(t, Tile)
+end
+
 function Tile:serialize ()
-    return { x = self.x, y = self.y, size = self.size, tile = self.tile }
+    return { id = self.id, x = self.x, y = self.y, size = self.size, isWalkable = self.isWalkable, tile = self.tile }
+end
+
+function Tile:__tostring ()
+    return self.x .. ", " .. self.y .. " (" .. self.id .. ")"
 end
 
 function Tile:draw (TilesetBatch, TileQuads, Viewport)

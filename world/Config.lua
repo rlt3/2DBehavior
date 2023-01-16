@@ -20,10 +20,12 @@ Config = {
     Tilesheet = love.graphics.newImage("assets/terrain_atlas.png"),
     TileSize = 32,
     Tiles = {
-        { id = "grass1", x =  0, y = 800 },
-        { id = "grass2", x = 32, y = 800 },
-        { id = "grass3", x = 64, y = 800 },
-        { id = "grass4", x = 96, y = 800 },
+        { id = "grass1", x =   0, y = 800, isWalkable = true },
+        { id = "grass2", x =  32, y = 800, isWalkable = true },
+        { id = "grass3", x =  64, y = 800, isWalkable = true },
+        { id = "grass4", x =  96, y = 800, isWalkable = true },
+
+        { id = "rock1",  x = 672, y = 672, isWalkable = false },
     },
 }
 return Config

@@ -6,9 +6,6 @@ Environment.__index = Environment
 function Environment:init ()
 end
 
-function Environment:map ()
-end
-
 function Environment:add (entity)
     table.insert(self.Entities, entity)
 end

@@ -2,13 +2,14 @@ require("Config")
 local Map = require("Map")
 local Viewport = require("Viewport")
 local Entity = require("Entity")
-local Serializer = require("Serializer")
 local Environment = require("Environment")
 
 local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 local imgui = require "libraries/cimgui"
+
+local Serializer = require("libraries/Serializer")
 local ffi = require 'ffi'
 
 function love.load ()
@@ -25,6 +26,11 @@ function love.load ()
     Environment:init()
 
     Environment:add(Entity.new(196, 196))
+
+    local start = Map:lookupTile(196, 196)
+    local goal = Map:lookupTile(0, 0)
+    local path = Map:findPath(start, goal)
+    print(path)
 end
 
 function love.quit ()
@@ -96,7 +102,9 @@ function DrawTilesMenu (selectedTile, isNewSelection)
 
         if imgui.ImageButton("btn", Config.Tilesheet, size, uv0, uv1, bg_col, tint_col) then
             TilesMenu.selected = tile.id
+
             selectedTile.tile = tile.id
+            selectedTile.isWalkable = tile.isWalkable
         end
 
         imgui.PopStyleColor(3)

@@ -2,6 +2,8 @@ require("Config")
 local Viewport = require("Viewport")
 local Tile = require("Tile")
 
+require("libraries/astar")
+
 local LEFT_MOUSE = 1
 local RIGHT_MOUSE = 2
 
@@ -50,16 +52,14 @@ function Map:create ()
 end
 
 function Map:load (saveData)
-    local id = 1
     for i,tile in ipairs(saveData) do
         if self.TilesLookup[tile.x] == nil then
             self.TilesLookup[tile.x] = {}
         end
 
-        local n = Tile.new(id, tile.x, tile.y, tile.size, tile.tile)
+        local n = Tile.deserialize(tile)
         table.insert(self.Tiles, n)
         self.TilesLookup[n.x][n.y] = n
-        id = id + 1
     end
 end
 
@@ -70,6 +70,20 @@ function Map:serialize ()
         table.insert(tiles, t:serialize())
     end
     return tiles
+end
+
+function Map:findPath (startTile, goalTile)
+    local validNeighbor = function(node, neighbor)
+        if not neighbor.isWalkable then
+            return false
+        end
+        if astar.distance(node.x, node.y, neighbor.x, neighbor.y) > Config.TileSize then
+            return false
+        end
+        return true
+    end
+
+    return astar.path(startTile, goalTile, self.Tiles, true, validNeighbor)
 end
 
 function Map:isSelectionNew ()
