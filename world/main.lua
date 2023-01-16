@@ -10,6 +10,7 @@ package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 local imgui = require "libraries/cimgui"
 
 local Serializer = require("libraries/Serializer")
+local nativefs = require("libraries/nativefs")
 local ffi = require 'ffi'
 
 function love.load ()
@@ -44,6 +45,150 @@ function love.quit ()
     end
 
     return imgui.love.Shutdown()
+end
+
+FileSystemDialog = {
+    cwd = nativefs.getWorkingDirectory(),
+    selected = nil,
+
+    Yield = 0,
+    Ok = 1,
+    Cancel = -1,
+
+    reset = function (self)
+    end
+}
+
+function DrawFileSystemDialog (title, message, okButton, cancelButton)
+    local flags = imgui.ImGuiWindowFlags_None
+                + imgui.ImGuiWindowFlags_NoResize
+                + imgui.ImGuiWindowFlags_NoScrollbar
+                + imgui.ImGuiWindowFlags_NoCollapse
+                --+ imgui.ImGuiWindowFlags_NoNav
+                --+ imgui.ImGuiWindowFlags_NoTitleBar
+
+    local windowSize = imgui.ImVec2_Float(300, 550)
+    local windowPos  = imgui.ImVec2_Float((love.graphics.getWidth() / 2) - windowSize.x, (love.graphics.getHeight() / 2) - windowSize.y)
+    imgui.SetNextWindowPos(windowPos, imgui.ImGuiCond_Always)
+    imgui.SetNextWindowSize(windowSize, imgui.ImGuiCond_Always)
+    imgui.Begin(title, nil, flags)
+
+    -- separate directories and files because one is for traveling and the
+    -- other is for selecting. also remember to seed the list with a way to
+    -- travel backwards
+    local directories = {}
+    local files = {}
+    table.insert(directories, { name = "..", type == "directory" })
+    local dirinfo = nativefs.getDirectoryItemsInfo(FileSystemDialog.cwd)
+    for i,file in ipairs(dirinfo) do
+        if file.type == "directory" then
+            table.insert(directories, file)
+        else
+            table.insert(files, file)
+        end
+    end
+
+    -- static height for the filepicker. it has scrollbars if needed
+    local maxHeight = 25 * imgui.GetTextLineHeightWithSpacing()
+    local listboxSize = imgui.ImVec2_Float(-imgui.FLT_MIN, maxHeight)
+
+    local status = FileSystemDialog.Yield
+    if imgui.BeginListBox("file picker", listboxSize) then
+        for i,dir in ipairs(directories) do
+            local isSelected = (FileSystemDialog.selected == dir.name)
+            if imgui.Selectable_Bool(dir.name .. "/", isSelected) then
+                FileSystemDialog.selected = dir.name
+            end
+            if is_selected then
+                imgui.SetItemDefaultFocus()
+            end
+        end
+        for i,file in ipairs(files) do
+            local isSelected = (FileSystemDialog.selected == file.name)
+            if imgui.Selectable_Bool(file.name, isSelected) then
+                FileSystemDialog.selected = file.name
+            end
+            if is_selected then
+                imgui.SetItemDefaultFocus()
+            end
+        end
+        imgui.EndListBox()
+    end
+
+    imgui.NewLine()
+    imgui.Text(message)
+    imgui.SameLine()
+    if FileSystemDialog.selected == nil then
+        imgui.TextColored(imgui.ImVec4_Float(0.4, 0.4, 0.4, 0.6), "none")
+    else
+        imgui.Text(FileSystemDialog.selected)
+    end
+
+    imgui.NewLine()
+    if FileSystemDialog.selected == nil then
+        imgui.BeginDisabled()
+    end
+    if imgui.Button(okButton) then
+        status = FileSystemDialog.Ok
+    end
+    if FileSystemDialog.selected == nil then
+        imgui.EndDisabled()
+    end
+
+    imgui.SameLine()
+    if imgui.Button(cancelButton) then
+        status = FileSystemDialog.Cancel
+    end
+
+    imgui.End()
+    return status
+end
+
+TopMenu = {
+    state = "open",
+}
+
+function DrawTopMenu ()
+    local flags = imgui.ImGuiWindowFlags_None
+                + imgui.ImGuiWindowFlags_NoResize
+                + imgui.ImGuiWindowFlags_NoScrollbar
+                + imgui.ImGuiWindowFlags_NoCollapse
+                --+ imgui.ImGuiWindowFlags_NoNav
+                + imgui.ImGuiWindowFlags_NoTitleBar
+
+    -- top corner with minimal height so that the menu is always menu-height
+    local pos  = imgui.ImVec2_Float(0, 0)
+    local size = imgui.ImVec2_Float(love.graphics:getWidth(), 0)
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Always)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
+
+    -- remove minimums and add some nice padding
+    imgui.PushStyleVar_Vec2(imgui.ImGuiStyleVar_WindowMinSize, imgui.ImVec2_Float(0, 0))
+    --imgui.PushStyleVar_Vec2(imgui.ImGuiStyleVar_FramePadding, imgui.ImVec2_Float(10, 10))
+
+    imgui.Begin("Main Menu", nil, flags)
+
+    if TopMenu.state == "open" then
+        local status = DrawFileSystemDialog("Select the file to open", "File selected:", "Open", "Cancel")
+        if status == FileSystemDialog.Ok then
+            TopMenu.state = "inactive"
+        elseif status == FileSystemDialog.Cancel then
+            TopMenu.state = "inactive"
+        end
+    else
+        if imgui.BeginMainMenuBar() then
+            if imgui.BeginMenu("File") then
+                if imgui.MenuItem_Bool("New") then
+                end
+                if imgui.MenuItem_Bool("Open", "Ctrl+O") then
+                    TopMenu.state = "open"
+                end
+            end
+        end
+    end
+
+    imgui.PopStyleVar(1)
+    imgui.End()
 end
 
 TilesMenu = {
@@ -132,6 +277,15 @@ function love.draw ()
     -- Map is the base layer
     -- Map controls tiles and thus should control what is navigable or not
     Map:draw(Viewport)
+
+    -- Next comes our entities. This includes characters and interactables,
+    -- such as chests, farmable land, doors, etc.
+    Environment:draw(Viewport)
+
+    -- Finally, the UI comes last as we expect that to be on top
+    --imgui.ShowDemoWindow()
+    DrawTopMenu()
+
     if Map:hasSelection() then
         Map:drawSelection(Viewport)
         if DrawTilesMenu(Map.SelectedTile, Map:isSelectionNew()) then
@@ -139,11 +293,6 @@ function love.draw ()
         end
     end
 
-    -- Next comes our entities. This includes characters and interactables,
-    -- such as chests, farmable land, doors, etc.
-    Environment:draw(Viewport)
-
-    -- Finally, the UI comes last as we expect that to be on top
     imgui.Render()
     imgui.love.RenderDrawLists()
 end
