@@ -96,8 +96,13 @@ function DrawFileSystemDialog (title, message, okButton, cancelButton)
     if imgui.BeginListBox("file picker", listboxSize) then
         for i,dir in ipairs(directories) do
             local isSelected = (FileSystemDialog.selected == dir.name)
-            if imgui.Selectable_Bool(dir.name .. "/", isSelected) then
-                FileSystemDialog.selected = dir.name
+            -- TODO: Windows versus linux paths, etc.
+            -- nativefs.GetWorkingDirectory returns a path with no appended
+            -- "\\". Therefore, every concatenation should be glued together
+            -- by a "\\"
+            if imgui.Selectable_Bool("\\" .. dir.name, isSelected) then
+                FileSystemDialog.cwd = FileSystemDialog.cwd .. "\\" .. dir.name
+                FileSystemDialog.selected = nil
             end
             if is_selected then
                 imgui.SetItemDefaultFocus()
