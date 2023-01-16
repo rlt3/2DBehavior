@@ -1,5 +1,5 @@
 Config = {
-    MapFile = "map.tiles",
+    SaveFile = "world.save",
     MapWidth = 100,
     MapHeight = 100,
     Charactersheet = love.graphics.newImage("assets/character.png"),

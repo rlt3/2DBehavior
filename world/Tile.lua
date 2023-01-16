@@ -1,16 +1,20 @@
 local Tile = {}
 Tile.__index = Tile
 
-function Tile.new (id, x, y, size)
+function Tile.new (id, x, y, size, tile)
     local n = {
         id = id,
         x = x,
         y = y,
         size = size,
-        tile = nil
+        tile = tile, -- can be nil
     }
     n = setmetatable(n, Tile)
     return n
+end
+
+function Tile:serialize ()
+    return { x = self.x, y = self.y, size = self.size, tile = self.tile }
 end
 
 function Tile:draw (TilesetBatch, TileQuads, Viewport)

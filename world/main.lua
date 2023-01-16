@@ -1,7 +1,9 @@
 require("Config")
 local Map = require("Map")
-local Entity = require("Entity")
 local Viewport = require("Viewport")
+local Entity = require("Entity")
+local Serializer = require("Serializer")
+local Environment = require("Environment")
 
 local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
@@ -9,17 +11,32 @@ package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 local imgui = require "libraries/cimgui"
 local ffi = require 'ffi'
 
-local character
-
 function love.load ()
-    character = Entity.new(196, 196)
-
-    Map:init()
     imgui.love.Init()
+
+    local mapData = nil
+    if love.filesystem.getInfo(Config.SaveFile) then
+        local data, size = love.filesystem.read(Config.SaveFile)
+        -- read data back in the same order we wrote it
+        mapData = Serializer.deserializeN(data, 1)
+    end
+
+    Map:init(mapData)
+    Environment:init()
+
+    Environment:add(Entity.new(196, 196))
 end
 
 function love.quit ()
-    Map:save()
+    -- NOTE: This serializer copies deeply. Meaning it copies functions, etc.
+    -- We only want data here, not implementation. This is why each component
+    -- has a `serialize` method.
+    local data = Serializer.serialize(Map:serialize())
+    local success, message = love.filesystem.write(Config.SaveFile, data)
+    if not success then
+        error("Save data was not saved! " .. message)
+    end
+
     return imgui.love.Shutdown()
 end
 
@@ -114,7 +131,7 @@ function love.draw ()
 
     -- Next comes our entities. This includes characters and interactables,
     -- such as chests, farmable land, doors, etc.
-    character:draw(Viewport)
+    Environment:draw(Viewport)
 
     -- Finally, the UI comes last as we expect that to be on top
     imgui.Render()
@@ -122,7 +139,7 @@ function love.draw ()
 end
 
 function love.update (dt)
-    character:update(dt)
+    Environment:update(dt)
 
     imgui.love.Update(dt)
     imgui.NewFrame()

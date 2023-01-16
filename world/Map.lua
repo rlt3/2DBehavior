@@ -1,5 +1,4 @@
 require("Config")
-local Serializer = require("Serializer")
 local Viewport = require("Viewport")
 local Tile = require("Tile")
 
@@ -16,13 +15,15 @@ local Map = {
 }
 Map.__index = Map
 
-function Map:init ()
-    if love.filesystem.getInfo(Config.MapFile) then
-        Map:load()
+function Map:init (saveData)
+    -- create or load the initial tiles
+    if saveData then
+        self:load(saveData)
     else
         self:create()
     end
 
+    -- create a single source of tile quads to draw as a batch
     self.TileQuads = {}
     local sz = Config.TileSize
     local w = Config.Tilesheet:getWidth()
@@ -30,21 +31,10 @@ function Map:init ()
     for i,tile in ipairs(Config.Tiles) do
         self.TileQuads[tile.id] = love.graphics.newQuad(tile.x, tile.y, sz, sz, w, h)
     end
-
     self.TilesetBatch = love.graphics.newSpriteBatch(Config.Tilesheet, Config.TileSize * Config.TileSize)
 end
 
-function Map:load ()
-    local contents, size = love.filesystem.read(Config.MapFile)
-    local tiles, lookup = Serializer.deserializeN(contents, 2)
-    self.Tiles = tiles
-    self.TilesLookup = lookup
-end
-
 function Map:create ()
-    print(Config.TileSize)
-    local width = love.graphics.getWidth()
-    local height = love.graphics.getHeight()
     local id = 1
     for x = 0, (Config.MapWidth * Config.TileSize) - Config.TileSize, Config.TileSize do
         if self.TilesLookup[x] == nil then
@@ -59,16 +49,27 @@ function Map:create ()
     end
 end
 
-function Map:save ()
-    -- NOTE: This serializer copies deeply. Meaning it copies functions, etc.
-    -- Ideally, we only want data here, not implementation. For example, I've
-    -- changed the 'Tile:draw' method and because it was serialized, I was not
-    -- able to see changes to it without loading from a forced-saved.
-    local data = Serializer.serialize(self.Tiles, self.TilesLookup)
-    local success, message = love.filesystem.write(Config.MapFile, data)
-    if not success then 
-        error("Map data could not be saved! " .. message)
+function Map:load (saveData)
+    local id = 1
+    for i,tile in ipairs(saveData) do
+        if self.TilesLookup[tile.x] == nil then
+            self.TilesLookup[tile.x] = {}
+        end
+
+        local n = Tile.new(id, tile.x, tile.y, tile.size, tile.tile)
+        table.insert(self.Tiles, n)
+        self.TilesLookup[n.x][n.y] = n
+        id = id + 1
     end
+end
+
+function Map:serialize ()
+    local tiles = {}
+    -- ipairs ensures order so if `id' ever becomes important...
+    for i,t in ipairs(self.Tiles) do
+        table.insert(tiles, t:serialize())
+    end
+    return tiles
 end
 
 function Map:isSelectionNew ()
