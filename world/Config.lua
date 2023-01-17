@@ -1,5 +1,7 @@
+local ini = require("ini")
+
 Config = {
-    SaveFile = "world.save",
+    ini = ini,
     MapWidth = 100,
     MapHeight = 100,
     Charactersheet = love.graphics.newImage("assets/character.png"),

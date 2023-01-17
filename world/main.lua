@@ -13,12 +13,22 @@ local Serializer = require("libraries/Serializer")
 local nativefs = require("libraries/nativefs")
 local ffi = require 'ffi'
 
+local calledOnce = false
 function love.load ()
-    imgui.love.Init()
+    -- cannot trust that these libraries have multi-time initialization
+    if not calledOnce then
+        imgui.love.Init()
+        calledOnce = true
+    end
+
+    if Config.ini:exists() then
+        Config.ini:reload()
+    end
 
     local mapData = nil
-    if love.filesystem.getInfo(Config.SaveFile) then
-        local data, size = love.filesystem.read(Config.SaveFile)
+    if nativefs.getInfo(Config.ini["SaveFile"]) then
+        print("Loading world data from: " .. Config.ini["SaveFile"])
+        local data, size = nativefs.read(Config.ini["SaveFile"])
         -- read data back in the same order we wrote it
         mapData = Serializer.deserializeN(data, 1)
     end
@@ -27,11 +37,10 @@ function love.load ()
     Environment:init()
 
     Environment:add(Entity.new(196, 196))
-
     local start = Map:lookupTile(196, 196)
     local goal = Map:lookupTile(0, 0)
     local path = Map:findPath(start, goal)
-    print(path)
+    --print(path)
 end
 
 function love.quit ()
@@ -39,10 +48,12 @@ function love.quit ()
     -- We only want data here, not implementation. This is why each component
     -- has a `serialize` method.
     local data = Serializer.serialize(Map:serialize())
-    local success, message = love.filesystem.write(Config.SaveFile, data)
+    local success, message = nativefs.write(Config.ini["SaveFile"], data)
     if not success then
         error("Save data was not saved! " .. message)
     end
+
+    Config.ini:save()
 
     return imgui.love.Shutdown()
 end
@@ -150,7 +161,7 @@ function DrawFileSystemDialog (title, message, okButton, cancelButton)
 end
 
 TopMenu = {
-    state = "open",
+    state = "inactive",
 }
 
 function DrawTopMenu ()
@@ -177,7 +188,9 @@ function DrawTopMenu ()
     if TopMenu.state == "open" then
         local status = DrawFileSystemDialog("Select the file to open", "File selected:", "Open", "Cancel")
         if status == FileSystemDialog.Ok then
+            Config.ini["SaveFile"] = FileSystemDialog.cwd .. "\\" .. FileSystemDialog.selected
             TopMenu.state = "inactive"
+            love.load() -- reload EVERYTHING using this new save file
         elseif status == FileSystemDialog.Cancel then
             TopMenu.state = "inactive"
         end

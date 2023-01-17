@@ -7,17 +7,19 @@ require("libraries/astar")
 local LEFT_MOUSE = 1
 local RIGHT_MOUSE = 2
 
-local Map = {
-    TilesLookup = {}, -- used to lookup tiles by x/y coordinates
-    Tiles = {}, -- holds all current tiles
-    SelectedTile = nil, -- currently selected tile
-    OldSelected = nil, -- book keep for tracking selection changes
-    TilesetBatch = nil,
-    TileQuads = nil
-}
+local Map = {}
 Map.__index = Map
 
 function Map:init (saveData)
+    -- Instead of declaring our state in an initialized table, we do it here
+    -- so that the `init` method can be called more than once
+    self.TilesLookup = {} -- used to lookup tiles by x/y coordinates
+    self.Tiles = {} -- holds all current tiles
+    self.SelectedTile = nil -- currently selected tile
+    self.OldSelected = nil -- book keep for tracking selection changes
+    self.TilesetBatch = nil
+    self.TileQuads = nil
+
     -- create or load the initial tiles
     if saveData then
         self:load(saveData)

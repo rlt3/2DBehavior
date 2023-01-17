@@ -1,9 +1,8 @@
-local Environment = {
-    Entities = {}
-}
+local Environment = {}
 Environment.__index = Environment
 
 function Environment:init ()
+    self.Entities = {}
 end
 
 function Environment:add (entity)
