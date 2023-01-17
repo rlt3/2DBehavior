@@ -130,10 +130,16 @@ function Map:lookupTile (x, y)
     x = x - (x % Config.TileSize)
     y = y - (y % Config.TileSize)
 
+    if self.TilesLookup[x] == nil then
+        return nil
+    end
+
     local n = self.TilesLookup[x][y]
+
     if n then
         return n
     end
+
     return nil
 end
 

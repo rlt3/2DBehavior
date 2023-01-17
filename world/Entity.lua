@@ -13,7 +13,6 @@ function Entity.new (x, y)
         animations = {},
         -- animations are keyed on string names
         currentAnimation = "walkDown",
-
         isIdle = true,
 
         -- path information represented as an array of nodes
