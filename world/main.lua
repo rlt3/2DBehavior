@@ -36,11 +36,13 @@ function love.load ()
     Map:init(mapData)
     Environment:init()
 
-    Environment:add(Entity.new(196, 196))
+    local e = Entity.new(196, 196)
     local start = Map:lookupTile(196, 196)
     local goal = Map:lookupTile(0, 0)
     local path = Map:findPath(start, goal)
-    --print(path)
+
+    e:givePath(path)
+    Environment:add(e)
 end
 
 function love.quit ()
