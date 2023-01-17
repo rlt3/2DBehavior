@@ -5,6 +5,7 @@ Entity.__index = Entity
 
 function Entity.new (x, y)
     local e = {
+        speed = 3,
         x = x,
         y = y,
 
@@ -12,6 +13,8 @@ function Entity.new (x, y)
         animations = {},
         -- animations are keyed on string names
         currentAnimation = "walkDown",
+
+        isIdle = true,
 
         -- path information represented as an array of nodes
         path = nil,
@@ -46,6 +49,7 @@ end
 
 function Entity:givePath (path)
     self.path = path
+    self.isIdle = false
 
     if #self.path == 0 or #self.path == 1 then
         error("Given invalid path of length " .. #self.path)
@@ -96,6 +100,7 @@ function Entity:updatePath (dt)
         -- this only works in-between nodes, e.g. paths[3] 1->2, 2->3
         if self.pathIndex == #self.path then
             self.path = nil
+            self.isIdle = true
             return
         end
 
@@ -104,7 +109,7 @@ function Entity:updatePath (dt)
     end
 
     local next = self.path[self.pathIndex + 1]
-    self.pathDt = self.pathDt + dt
+    self.pathDt = self.pathDt + (self.speed * dt)
 
     -- lerping only works using the original start & goal nodes regardless of
     -- the entity's current position
@@ -115,7 +120,11 @@ end
 
 function Entity:updateAnimation (dt)
     local animation = self.animations[self.currentAnimation]
-    if animation.status == "paused" then
+    -- use the last animation's sprite with no animating when idle
+    if self.isIdle then
+        animation:pause()
+        animation:gotoFrame(1)
+    elseif animation.status == "paused" then
         -- TODO: not used for anything currently, but allows us to control
         -- animation locking and waiting for animations to end before doing
         -- something else
