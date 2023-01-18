@@ -1,13 +1,13 @@
 local anim8 = require 'libraries/anim8'
+local Bounds = require 'Bounds'
 
 local Entity = {}
 Entity.__index = Entity
 
 function Entity.new (x, y)
     local e = {
+        bounds = Bounds.new(x, y, Config.CharacterSize),
         speed = 3,
-        x = x,
-        y = y,
 
         -- entity-specific animation data for each animation
         animations = {},
@@ -34,7 +34,7 @@ function Entity.new (x, y)
 end
 
 function Entity:draw (Viewport)
-    local x, y = Viewport:worldToScreen(self.x, self.y)
+    local x, y = Viewport:worldToScreen(self.bounds:position())
     local animation = self.animations[self.currentAnimation]
     animation:draw(Config.Charactersheet, x, y)
 end
@@ -113,8 +113,7 @@ function Entity:updatePath (dt)
     -- lerping only works using the original start & goal nodes regardless of
     -- the entity's current position
     local pos = lerp(node, next, self.pathDt)
-    self.x = pos.x
-    self.y = pos.y
+    self.bounds:setPosition(pos)
 end
 
 function Entity:updateAnimation (dt)

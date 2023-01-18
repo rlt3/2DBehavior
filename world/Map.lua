@@ -157,6 +157,7 @@ function Map:mousepressed (x, y, button)
 end
 
 function Map:mousereleased (x, y, button)
+    -- TODO: Viewport should be out of Map
     if button == RIGHT_MOUSE then
         Viewport:dragEnd()
     end

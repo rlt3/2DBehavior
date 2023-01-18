@@ -66,7 +66,7 @@ function love.draw ()
 
     -- Finally, the UI comes last as we expect that to be on top
     --imgui.ShowDemoWindow()
-    UI:draw(Map, Viewport)
+    UI:draw(Map, Environment, Viewport)
 end
 
 function love.update (dt)
@@ -77,12 +77,14 @@ end
 function love.mousepressed(x, y, button)
     -- TODO: this could be better written to express the control flow
     if UI:mousepressed(x, y, button) then
+        Environment:mousepressed(x, y, button)
         Map:mousepressed(x, y, button)
     end
 end
 
 function love.mousereleased(x, y, button)
     if UI:mousereleased(x, y, button) then
+        Environment:mousereleased(x, y, button)
         Map:mousereleased(x, y, button)
     end
 end

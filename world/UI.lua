@@ -282,18 +282,23 @@ function UI:quit ()
     return imgui.love.Shutdown()
 end
 
-function UI:draw (Map, Viewport)
+function UI:draw (Map, Environment, Viewport)
     --imgui.ShowDemoWindow()
     local disabled = self:DrawTopMenu()
 
     if disabled then
         imgui.BeginDisabled()
     end
+
     if Map:hasSelection() then
         Map:drawSelection(Viewport)
         if self:DrawTilesMenu(Viewport, Map.SelectedTile, Map:isSelectionNew()) then
             Map:clearSelection()
         end
+    end
+    if Environment:hasSelection() then
+        print("here")
+        Environment:drawSelection(Viewport)
     end
     if disabled then
         imgui.EndDisabled()
