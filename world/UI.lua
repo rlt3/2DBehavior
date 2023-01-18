@@ -10,6 +10,13 @@ local UI = {
     TopMenu = {
         state = "inactive",
     },
+    ToolMenu = {
+        selected = "none",
+        tools = {
+            { name = "Tiles Tool" },
+            { name = "Entity Tool" },
+        },
+    },
     TilesMenu = {
         isOpen = ffi.new("bool[1]", true),
         selected = "grass1",
@@ -163,7 +170,22 @@ function UI:DrawTopMenu ()
             if imgui.MenuItem_Bool("Open", "Ctrl+O") then
                 self.TopMenu.state = "open"
             end
+            imgui.EndMenu()
         end
+        if imgui.BeginMenu("Tools") then
+            for i,tool in ipairs(self.ToolMenu.tools) do
+                local isSelected = (self.ToolMenu.selected == tool.name)
+                if imgui.MenuItem_Bool(tool.name, nil, isSelected) then
+                    if isSelected then
+                        self.ToolMenu.selected = "none"
+                    else
+                        self.ToolMenu.selected = tool.name
+                    end
+                end
+            end
+            imgui.EndMenu()
+        end
+        imgui.EndMenu()
     end
     if self.TopMenu.state ~= "inactive" then
         imgui.EndDisabled()
