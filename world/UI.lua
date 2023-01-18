@@ -153,7 +153,7 @@ function UI:DrawTopMenu ()
 
     -- draw the main menu. while there's work being done, disable this menu
     if self.TopMenu.state ~= "inactive" then
-        local isDisabled = true
+        isDisabled = true
         imgui.BeginDisabled()
     end
     if imgui.BeginMainMenuBar() then
@@ -261,20 +261,21 @@ function UI:quit ()
 end
 
 function UI:draw (Map, Viewport)
+    --imgui.ShowDemoWindow()
     local disabled = self:DrawTopMenu()
 
-    --if disabled then
-    --    imgui.BeginDisabled()
-    --end
+    if disabled then
+        imgui.BeginDisabled()
+    end
     if Map:hasSelection() then
         Map:drawSelection(Viewport)
         if self:DrawTilesMenu(Viewport, Map.SelectedTile, Map:isSelectionNew()) then
             Map:clearSelection()
         end
     end
-    --if disabled then
-    --    imgui.EndDisabled()
-    --end
+    if disabled then
+        imgui.EndDisabled()
+    end
 
     imgui.Render()
     imgui.love.RenderDrawLists()
@@ -287,14 +288,11 @@ end
 
 function UI:mousepressed (x, y, button)
     imgui.love.MousePressed(button)
-    local s = not imgui.love.GetWantCaptureMouse()
-    print("here " .. tostring(s))
-    return s
-    --return not imgui.love.GetWantCaptureMouse()
+    return not imgui.love.GetWantCaptureMouse()
 end
 
 function UI:mousereleased (x, y, button)
-    imgui.love.MouseReleased(x, y, button)
+    imgui.love.MouseReleased(button)
     return not imgui.love.GetWantCaptureMouse()
 end
 
