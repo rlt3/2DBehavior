@@ -1,13 +1,17 @@
-local ffi = require 'ffi'
-local nativefs = require("Libraries/nativefs")
-
 local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
-local imgui = require "Libraries/cimgui"
 
-local UI = {}
+local nativefs = require("Libraries/nativefs")
+local imgui = require("Libraries/cimgui")
+local ffi = require('ffi')
+
+local UI = {
+    Viewport = require("UI/Viewport")
+}
 UI.__index = UI
+
+local MainMenu = require("UI/MainMenu")
 
 function UI:init ()
     imgui.love.Init()
@@ -19,6 +23,9 @@ end
 
 function UI:draw ()
     imgui.ShowDemoWindow()
+
+    MainMenu:draw(imgui)
+
     imgui.Render()
     imgui.love.RenderDrawLists()
 end
