@@ -1,9 +1,15 @@
+--
+-- Viewport owns a vector which is the new origin from which the World's
+-- drawables will be drawn. Middle-clicking allows the user to move this origin
+-- around to see different parts of the World.
+--
+-- The Viewport also owns a Box which is the size of the screen. Using
+-- coordinates from the new origin, World objects are checked whether their Box
+-- and the screen's Box intersect and should be drawn.
+--
+
 local Vector = require("Utils/Vector")
 local Box = require("Utils/Box")
-
--- The viewport initially has its origin at 0,0. Dragging the viewport is
--- simply a matter of changing the origin and thus drawing all drawables at
--- an offset
 
 local function resetScreenBox ()
     return Box.new(0, 0, love.graphics.getWidth(), love.graphics.getHeight())
@@ -37,17 +43,12 @@ end
 function Viewport:worldToScreen (box)
     local origin = self.origin
     local x, y = box:position()
-    return Box.new(origin.x + x, origin.y + y, box.w, box.h)
+    return Box.new(x + origin.x, y + origin.y, box.w, box.h)
 end
 
 function Viewport:isTileVisible (tile)
     local box = self:worldToScreen(tile.box)
-    local r = box:intersects(self.screen)
-    if not r then
-        print(box, self.screen)
-    end
-    return r
-    --return box:intersects(self.screen)
+    return self.screen:intersects(box)
 end
 
 function Viewport:mousemoved (x, y, dx, dy)

@@ -4,9 +4,9 @@ local Map = require("World/Map")
 
 function love.load ()
     UI:init()
-
     Map:init()
 
+    -- just set a sane default color early
     love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -16,7 +16,6 @@ end
 
 function love.draw ()
     Map:draw(UI.Viewport)
-
     UI:draw()
 end
 
@@ -49,7 +48,6 @@ end
 
 function love.wheelmoved (x, y)
     if UI:wheelmoved(x, y) then
-        -- your code here 
     end
 end
 
@@ -63,12 +61,10 @@ end
 
 function love.keyreleased (key, ...)
     if UI:keyreleased(key) then
-        -- your code here 
     end
 end
 
 function love.textinput (t)
     if UI:textinput(t) then
-        -- your code here 
     end
 end

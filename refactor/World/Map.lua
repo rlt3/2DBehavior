@@ -43,10 +43,6 @@ function Map:create ()
             local n = Tile.new(x, y, Config.TileSize)
             table.insert(self.Tiles, n)
             self.TilesLookup[x][y] = n
-
-            if x == 0 and y == 0 then
-                print(n)
-            end
         end
     end
 end

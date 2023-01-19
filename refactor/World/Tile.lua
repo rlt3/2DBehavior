@@ -29,7 +29,7 @@ function Tile:draw (Viewport, Batch, Quads)
     local box = Viewport:worldToScreen(self.box)
 
     if self.tile == "none" then
-        box:draw(Viewport)
+        box:draw()
     else
         Batch:add(Quads[self.tile], box:position())
     end

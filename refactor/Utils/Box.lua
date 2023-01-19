@@ -1,4 +1,5 @@
 local Vector = require("Utils/Vector")
+
 local Box = {}
 Box.__index = Box
 
@@ -29,6 +30,15 @@ function Box:position ()
     return self.pos.x, self.pos.y
 end
 
+function Box:rect ()
+    return {
+        x1 = self.pos.x,
+        y1 = self.pos.y,
+        x2 = self.pos.x + self.w,
+        y2 = self.pos.y + self.h,
+    }
+end
+
 function Box:isPointInside (x, y)
     return self.pos.x <= x
        and self.pos.y <= y
@@ -38,23 +48,23 @@ end
 
 function Box:intersects (other)
     assert(isBox(self) and isBox(other), "Type mismatch: Box expected.")
-    return self.pos.x < other.pos.x + other.w
-       and self.pos.x + self.w > other.pos.x
-       and self.pos.y < other.pos.y + other.h
-       and self.pos.y + self.h > other.pos.y
+
+    local a = self:rect()
+    local b = other:rect()
+
+    return a.x1 < b.x2
+       and a.x2 > b.x1
+       and a.y1 < b.y2
+       and a.y2 > b.y1
 end
 
-function Box:draw (Viewport)
-    local x, y = Viewport:worldToScreen(self):position()
-    local w, h = self.w, self.h
-    love.graphics.line(x, y, x, y + h)
-    love.graphics.line(x, y, x + w, y)
-    love.graphics.line(x + w, y, x + w, y + h)
-    love.graphics.line(x, y + h, x + w, y + h)
+function Box:draw (x, y)
+    local r = self:rect()
+    love.graphics.polygon("line", r.x1,r.y1, r.x2,r.y1, r.x2,r.y2, r.x1,r.y2)
 end
 
-function Box:__tostring()
-    return "Box("..self.pos.x..", "..self.pos.y..", "..self.w..", "..self.h..")"
+function Box:__tostring ()
+    return "Box("..self.pos.x..", "..self.pos.y..", "..self.pos.x + self.w..", "..self.pos.y + self.h..")"
 end
 
 return Box
