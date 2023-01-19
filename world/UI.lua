@@ -1,10 +1,10 @@
 local ffi = require 'ffi'
-local nativefs = require("libraries/nativefs")
+local nativefs = require("Libraries/nativefs")
 
 local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
-local imgui = require "libraries/cimgui"
+local imgui = require "Libraries/cimgui"
 
 local UI = {
     TopMenu = {
