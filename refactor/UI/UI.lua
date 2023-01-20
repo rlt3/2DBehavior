@@ -12,6 +12,7 @@ local UI = {
 UI.__index = UI
 
 local MainMenu = require("UI/MainMenu")
+local TilesMenu = require("UI/TilesMenu")
 
 function UI:init ()
     imgui.love.Init()
@@ -25,6 +26,7 @@ function UI:draw ()
     imgui.ShowDemoWindow()
 
     MainMenu:draw(imgui)
+    TilesMenu:draw(imgui)
 
     imgui.Render()
     imgui.love.RenderDrawLists()

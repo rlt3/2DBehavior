@@ -40,10 +40,11 @@ function Box:rect ()
 end
 
 function Box:isPointInside (x, y)
-    return self.pos.x <= x
-       and self.pos.y <= y
-       and self.pos.x + self.w >= x
-       and self.pos.y + self.h >= y
+    local r = self:rect()
+    return r.x1 <= x
+       and r.y1 <= y
+       and r.x2 >= x
+       and r.y2 >= y
 end
 
 function Box:intersects (other)

@@ -2,7 +2,6 @@ local MainMenu = {}
 MainMenu.__index = MainMenu
 
 local function beginWindow (imgui)
-    local isDisabled = false
     local flags = imgui.ImGuiWindowFlags_None
                 + imgui.ImGuiWindowFlags_NoResize
                 + imgui.ImGuiWindowFlags_NoScrollbar
