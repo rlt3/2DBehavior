@@ -32,6 +32,21 @@ function Map:init (saveData)
         self.TileQuads[tile.id] = love.graphics.newQuad(tile.x, tile.y, sz, sz, w, h)
     end
     self.TilesetBatch = love.graphics.newSpriteBatch(Config.Tilesheet, Config.TileSize * Config.TileSize)
+
+    for k,v in pairs(self.TilesLookup[0][0]) do
+        local t = type(v)
+        if t == "table" then
+            if getmetatable(v) == Box then
+                print("Box: `".. k .. "'")
+            end
+        elseif t == "string" then
+            print("String: `".. k .. "'")
+        elseif t == "boolean" then
+            print("Bool: `".. k .. "'")
+        else
+            print(k, v, type(v))
+        end
+    end
 end
 
 function Map:create ()

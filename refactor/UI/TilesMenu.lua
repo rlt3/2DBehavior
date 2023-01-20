@@ -44,6 +44,9 @@ function TilesMenu:draw (imgui)
     -- Right now, we can just hard-code the data-driven parts. So, create
     -- functions for `Tile` and `Box` data on the UI side versus the World
     -- side.
+    --
+    -- What's wrong with simply traversing the key,value pairs of an object
+    -- and picking the correct 'menu item' for the type of value?
 
     for i, tile in ipairs(Config.Tiles) do
         -- size of the button
