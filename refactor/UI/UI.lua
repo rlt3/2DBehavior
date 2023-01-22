@@ -6,16 +6,20 @@ local nativefs = require("Libraries/nativefs")
 local imgui = require("Libraries/cimgui")
 local ffi = require('ffi')
 
-local UI = {
-    Viewport = require("UI/Viewport")
-}
-UI.__index = UI
-
+local Viewport = require("UI/Viewport")
 local MainMenu = require("UI/MainMenu")
 local TilesMenu = require("UI/TilesMenu")
 
-function UI:init ()
+local UI = {}
+UI.__index = UI
+
+function UI:init (World)
     imgui.love.Init()
+
+    self.Viewport = Viewport
+    self.World = World
+
+    TilesMenu:init(World.Map, imgui)
 end
 
 function UI:quit ()
@@ -26,7 +30,7 @@ function UI:draw ()
     imgui.ShowDemoWindow()
 
     MainMenu:draw(imgui)
-    TilesMenu:draw(imgui)
+    TilesMenu:draw()
 
     imgui.Render()
     imgui.love.RenderDrawLists()
@@ -39,16 +43,29 @@ end
 
 function UI:mousepressed (x, y, button)
     imgui.love.MousePressed(button)
+    if button == 3 then
+        Viewport:dragStart()
+    end
+
+    TilesMenu:mousepressed(x, y, dx, dy)
+
     return not imgui.love.GetWantCaptureMouse()
 end
 
 function UI:mousereleased (x, y, button)
     imgui.love.MouseReleased(button)
+    if button == 3 then
+        Viewport:dragEnd()
+    end
+
+    TilesMenu:mousereleased(x, y, dx, dy)
+
     return not imgui.love.GetWantCaptureMouse()
 end
 
 function UI:mousemoved (x, y, dx, dy)
     imgui.love.MouseMoved(x, y)
+    Viewport:mousemoved(x, y, dx, dy)
     return not imgui.love.GetWantCaptureMouse()
 end
 

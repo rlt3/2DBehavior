@@ -1,10 +1,10 @@
 require("Config")
 local UI = require("UI/UI")
-local Map = require("World/Map")
+local World = require("World/World")
 
 function love.load ()
-    UI:init()
-    Map:init()
+    World:init()
+    UI:init(World)
 
     -- just set a sane default color early
     love.graphics.setColor(1, 1, 1, 1)
@@ -15,39 +15,33 @@ function love.quit ()
 end
 
 function love.draw ()
-    Map:draw(UI.Viewport)
+    World:draw(UI.Viewport)
     UI:draw()
 end
 
 function love.update (dt)
+    World:update(dt)
     UI:update(dt)
 end
 
 function love.mousepressed (x, y, button)
     -- TODO: this could be better written to express the control flow
     if UI:mousepressed(x, y, button) then
-        if button == 3 then
-            UI.Viewport:dragStart()
-        end
     end
 end
 
 function love.mousereleased (x, y, button)
     if UI:mousereleased(x, y, button) then
-        if button == 3 then
-            UI.Viewport:dragEnd()
-        end
     end
 end
 
 function love.mousemoved (x, y, dx, dy)
-    if UI:mousemoved(x, y) then
-        UI.Viewport:mousemoved(x, y, dx, dy)
+    if UI:mousemoved(x, y, dx, dy) then
     end
 end
 
 function love.wheelmoved (x, y)
-    if UI:wheelmoved(x, y) then
+    if UI:wheelmoved(x, y, dx, dy) then
     end
 end
 
