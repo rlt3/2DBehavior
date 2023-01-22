@@ -81,6 +81,20 @@ local function DrawInput_Tile ()
     --end
 end
 
+local buf = ffi.new("char[64]") -- zero-filled
+local ret = ffi.new("int[1]", 0)
+local filter = function (data)
+    local r = ffi.C.strlen(buf)
+    print(r, ffi.string(buf))
+    if (r > 64) then
+        return true
+    end
+    return false
+end
+ffi.cdef[[
+int strlen(char *);
+]]
+
 function TilesMenu:draw ()
     if not selected then return end
 
@@ -95,16 +109,19 @@ function TilesMenu:draw ()
     print(selected.box)
     for k,v in pairs(selected) do
         local t = type(v)
-        if t == "table" then
-            if getmetatable(v) == Box then
-                print("Box: `".. k .. "'")
-            end
+        if isBox(v) then
+            --print("Box: `".. k .. "'")
+            imgui.Text("Box:")
+            --local flags = imgui.ImGuiInputTextFlags_CharsDecimal
+            local flags = imgui.ImGuiInputTextFlags_CallbackCharFilter
+            --imgui.InputText("x", buf, 64, flags)
+            imgui.InputText("x", buf, 64, flags, filter)
         elseif t == "string" then
-            print("String: `".. k .. "'")
+            --print("String: `".. k .. "'")
         elseif t == "boolean" then
-            print("Bool: `".. k .. "'")
+            --print("Bool: `".. k .. "'")
         else
-            print(k, v, type(v))
+            error("Unrecognized type: " .. type(v))
         end
     end
 

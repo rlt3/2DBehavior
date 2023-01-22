@@ -86,7 +86,7 @@ end
 
 function UI:textinput (t)
     imgui.love.TextInput(t)
-    return imgui.love.GetWantCaptureKeyboard()
+    return imgui.love.GetWantTextInput()
 end
 
 return setmetatable(UI, UI)

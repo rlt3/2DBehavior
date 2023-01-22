@@ -3,8 +3,8 @@ local Vector = require("Utils/Vector")
 local Box = {}
 Box.__index = Box
 
-local function isBox (t)
-    return getmetatable(t) == Box
+function isBox (t)
+    return type(t) == "table" and getmetatable(t) == Box
 end
 
 function Box.new (x, y, w, h)
