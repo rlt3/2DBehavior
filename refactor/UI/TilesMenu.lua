@@ -4,8 +4,6 @@ local ffi = require('ffi')
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
 
-local isOpen = ffi.new("bool[1]", true)
-
 -- references created at :init
 local imgui
 local Map
@@ -82,18 +80,20 @@ local function DrawInput_Tile ()
 end
 
 local buf = ffi.new("char[64]") -- zero-filled
-local ret = ffi.new("int[1]", 0)
-local filter = function (data)
-    local r = ffi.C.strlen(buf)
-    print(r, ffi.string(buf))
-    if (r > 64) then
-        return true
+
+-- expects that ImGuiInputTextFlags_CharsDecimal has been passed
+local function filterInteger (data)
+    local c = string.char(data.EventChar)
+    local filter = {
+        '.', '+', '-', '/', '*'
+    }
+    for i,bad in ipairs(filter) do
+        if c == bad then
+            return true
+        end
     end
     return false
 end
-ffi.cdef[[
-int strlen(char *);
-]]
 
 function TilesMenu:draw ()
     if not selected then return end
@@ -106,16 +106,19 @@ function TilesMenu:draw ()
     local white = imgui.ImVec4_Float(1, 1, 1, 1)
     local dim = imgui.ImVec2_Float(Config.Tilesheet:getDimensions())
 
-    print(selected.box)
+    --print(selected.box)
     for k,v in pairs(selected) do
         local t = type(v)
         if isBox(v) then
-            --print("Box: `".. k .. "'")
             imgui.Text("Box:")
-            --local flags = imgui.ImGuiInputTextFlags_CharsDecimal
+            imgui.NewLine()
             local flags = imgui.ImGuiInputTextFlags_CallbackCharFilter
-            --imgui.InputText("x", buf, 64, flags)
-            imgui.InputText("x", buf, 64, flags, filter)
+                        + imgui.ImGuiInputTextFlags_CharsDecimal
+
+            local callback = ffi.cast("ImGuiInputTextCallback", filterInteger)
+            imgui.InputText("x", buf, 64, flags, callback)
+            callback:free()
+
         elseif t == "string" then
             --print("String: `".. k .. "'")
         elseif t == "boolean" then
