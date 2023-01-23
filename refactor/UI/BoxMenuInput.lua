@@ -40,8 +40,6 @@ local function updateSelected (buf, selected, key, value)
 end
 
 function BoxMenuInput:draw (selected)
-    imgui.Text("Box:")
-    imgui.NewLine()
     local flags = imgui.ImGuiInputTextFlags_CallbackCharFilter
                 + imgui.ImGuiInputTextFlags_CharsDecimal
                 + imgui.ImGuiInputTextFlags_AutoSelectAll
@@ -51,11 +49,11 @@ function BoxMenuInput:draw (selected)
     ffi.copy(self.xbuf, tostring(selected.box.pos.x))
     ffi.copy(self.ybuf, tostring(selected.box.pos.y))
 
-    if imgui.InputText("x", self.xbuf, NUMBYTES, flags, callback, self.xbuf) then
+    if imgui.InputText("box.pos.x", self.xbuf, NUMBYTES, flags, callback, self.xbuf) then
         updateSelected(self.xbuf, selected, "x", tonumber(ffi.string(self.xbuf)))
     end
 
-    if imgui.InputText("y", self.ybuf, NUMBYTES, flags, callback, self.ybuf) then
+    if imgui.InputText("box.pos.y", self.ybuf, NUMBYTES, flags, callback, self.ybuf) then
         updateSelected(self.ybuf, selected, "y", tonumber(ffi.string(self.ybuf)))
     end
 

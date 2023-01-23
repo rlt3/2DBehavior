@@ -1,6 +1,8 @@
 local ffi = require('ffi')
 local Box = require('Utils/Box')
+
 local BoxMenuInput = require('UI/BoxMenuInput')
+local BooleanMenuInput = require('UI/BooleanMenuInput')
 
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
@@ -10,10 +12,12 @@ local isOpen = ffi.new("bool[1]", true)
 -- references created at :init
 local Map
 local BoxInput
+local BooleanInput
 
 function TilesMenu:init (_Map)
     Map = _Map
     selected = Map:lookupTile(0, 0)
+    BooleanInput = BooleanMenuInput.new()
     BoxInput = BoxMenuInput.new()
 end
 
@@ -30,18 +34,6 @@ end
 
 local function endWindow ()
     imgui.End()
-end
-
-local function DrawInput_Box ()
-end
-
-local function DrawInput_Bool ()
-end
-
-local function DrawInput_String ()
-end
-
-local function ParseState (state)
 end
 
 local function DrawInput_Tile ()
@@ -95,7 +87,9 @@ function TilesMenu:draw ()
         if isBox(v) then
             BoxInput:draw(selected)
         elseif t == "string" then
+            --StringInput:draw(k, v)
         elseif t == "boolean" then
+            BooleanInput:draw(selected, k, v)
         else
             error("Unrecognized type: " .. type(v))
         end
