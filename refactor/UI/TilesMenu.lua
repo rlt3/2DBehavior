@@ -3,6 +3,7 @@ local Box = require('Utils/Box')
 
 local BoxMenuInput = require('UI/BoxMenuInput')
 local BooleanMenuInput = require('UI/BooleanMenuInput')
+local StringMenuInput = require('UI/StringMenuInput')
 
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
@@ -13,12 +14,14 @@ local isOpen = ffi.new("bool[1]", true)
 local Map
 local BoxInput
 local BooleanInput
+local StringInput
 
 function TilesMenu:init (_Map)
     Map = _Map
     selected = Map:lookupTile(0, 0)
     BooleanInput = BooleanMenuInput.new()
     BoxInput = BoxMenuInput.new()
+    StringInput = StringMenuInput.new()
 end
 
 local function beginWindow ()
@@ -76,18 +79,12 @@ function TilesMenu:draw ()
 
     beginWindow(imgui)
 
-    local red = imgui.ImVec4_Float(0, 1, 0, 1)
-    local black = imgui.ImVec4_Float(0, 0, 0, 0)
-    local green = imgui.ImVec4_Float(0, 1, 0, 1)
-    local white = imgui.ImVec4_Float(1, 1, 1, 1)
-    local dim = imgui.ImVec2_Float(Config.Tilesheet:getDimensions())
-
     for k,v in pairs(selected) do
         local t = type(v)
         if isBox(v) then
-            BoxInput:draw(selected)
+            BoxInput:draw(selected, k, v)
         elseif t == "string" then
-            --StringInput:draw(k, v)
+            StringInput:draw(selected, k, v)
         elseif t == "boolean" then
             BooleanInput:draw(selected, k, v)
         else
@@ -105,6 +102,13 @@ end
 
 function TilesMenu:hasSelection ()
     return (selected ~= nil)
+end
+
+function TilesMenu:drawSelection (Viewport)
+    love.graphics.setColor(0, 0, 1, 1)
+    local b = Viewport:worldToScreen(selected.box)
+    b:draw(Viewport)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function TilesMenu:mousepressed (Viewport, x, y, button)

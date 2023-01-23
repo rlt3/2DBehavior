@@ -4,15 +4,15 @@ local BooleanMenuInput = {}
 BooleanMenuInput.__index = BooleanMenuInput
 
 function BooleanMenuInput.new ()
-    return setmetatable({
-        selected = ffi.new("bool[1]", false),
-    }, BooleanMenuInput)
+    local t = {
+        buf = ffi.new("bool[1]", false)
+    }
+    return setmetatable(t, BooleanMenuInput)
 end
 
-
 function BooleanMenuInput:draw (selected, k, v)
-    self.selected[0] = v
-    if imgui.Checkbox(k, self.selected) then
+    self.buf[0] = v
+    if imgui.Checkbox(k, self.buf) then
         selected[k] = not v
     end
 end

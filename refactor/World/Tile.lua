@@ -9,6 +9,12 @@ function Tile.new (x, y, w, h)
         box = Box.new(x, y, w, h),
         isTraversable = true,
         tile = "none",
+
+        isCool = false,
+        anotherBox = Box.new(y, x, h, w),
+        string1 = "foo",
+        string2 = "bar",
+        string3 = "baz",
     }
     return setmetatable(t, Tile)
 end

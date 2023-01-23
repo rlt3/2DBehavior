@@ -29,6 +29,10 @@ end
 function UI:draw ()
     imgui.ShowDemoWindow()
 
+    if TilesMenu:hasSelection() then
+        TilesMenu:drawSelection(Viewport)
+    end
+
     MainMenu:draw(imgui)
     TilesMenu:draw()
 
