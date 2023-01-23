@@ -1,20 +1,20 @@
-local Box = require('Utils/Box')
 local ffi = require('ffi')
+local Box = require('Utils/Box')
+local BoxMenuInput = require('UI/BoxMenuInput')
 
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
 
--- references created at :init
-local imgui
-local Map
-
 local isOpen = ffi.new("bool[1]", true)
 
-function TilesMenu:init (_Map, _imgui)
-    Map = _Map
-    imgui = _imgui
+-- references created at :init
+local Map
+local BoxInput
 
+function TilesMenu:init (_Map)
+    Map = _Map
     selected = Map:lookupTile(0, 0)
+    BoxInput = BoxMenuInput.new()
 end
 
 local function beginWindow ()
@@ -79,22 +79,6 @@ local function DrawInput_Tile ()
     --end
 end
 
-local buf = ffi.new("char[64]") -- zero-filled
-
--- expects that ImGuiInputTextFlags_CharsDecimal has been passed
-local function filterInteger (data)
-    local c = string.char(data.EventChar)
-    local filter = {
-        '.', '+', '-', '/', '*'
-    }
-    for i,bad in ipairs(filter) do
-        if c == bad then
-            return true
-        end
-    end
-    return false
-end
-
 function TilesMenu:draw ()
     if not selected then return end
 
@@ -106,23 +90,12 @@ function TilesMenu:draw ()
     local white = imgui.ImVec4_Float(1, 1, 1, 1)
     local dim = imgui.ImVec2_Float(Config.Tilesheet:getDimensions())
 
-    --print(selected.box)
     for k,v in pairs(selected) do
         local t = type(v)
         if isBox(v) then
-            imgui.Text("Box:")
-            imgui.NewLine()
-            local flags = imgui.ImGuiInputTextFlags_CallbackCharFilter
-                        + imgui.ImGuiInputTextFlags_CharsDecimal
-
-            local callback = ffi.cast("ImGuiInputTextCallback", filterInteger)
-            imgui.InputText("x", buf, 64, flags, callback)
-            callback:free()
-
+            BoxInput:draw(selected)
         elseif t == "string" then
-            --print("String: `".. k .. "'")
         elseif t == "boolean" then
-            --print("Bool: `".. k .. "'")
         else
             error("Unrecognized type: " .. type(v))
         end

@@ -2,8 +2,8 @@ local lib_path = love.filesystem.getWorkingDirectory() .. "libraries/"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
 
+imgui = require("Libraries/cimgui")
 local nativefs = require("Libraries/nativefs")
-local imgui = require("Libraries/cimgui")
 local ffi = require('ffi')
 
 local Viewport = require("UI/Viewport")
@@ -19,7 +19,7 @@ function UI:init (World)
     self.Viewport = Viewport
     self.World = World
 
-    TilesMenu:init(World.Map, imgui)
+    TilesMenu:init(World.Map)
 end
 
 function UI:quit ()
@@ -43,30 +43,39 @@ end
 
 function UI:mousepressed (x, y, button)
     imgui.love.MousePressed(button)
-    if button == 3 then
-        Viewport:dragStart()
+    local canUseEvent = not imgui.love.GetWantCaptureMouse()
+    if canUseEvent then
+        if button == 3 then
+            Viewport:dragStart()
+        end
+        if button == 1 then
+            TilesMenu:mousepressed(x, y, dx, dy)
+        end
     end
-
-    TilesMenu:mousepressed(x, y, dx, dy)
-
-    return not imgui.love.GetWantCaptureMouse()
+    return canUseEvent
 end
 
 function UI:mousereleased (x, y, button)
     imgui.love.MouseReleased(button)
-    if button == 3 then
-        Viewport:dragEnd()
+    local canUseEvent = not imgui.love.GetWantCaptureMouse()
+    if canUseEvent then
+        if button == 3 then
+            Viewport:dragEnd()
+        end
+        if button == 1 then
+            TilesMenu:mousereleased(x, y, dx, dy)
+        end
     end
-
-    TilesMenu:mousereleased(x, y, dx, dy)
-
-    return not imgui.love.GetWantCaptureMouse()
+    return canUseEvent
 end
 
 function UI:mousemoved (x, y, dx, dy)
     imgui.love.MouseMoved(x, y)
-    Viewport:mousemoved(x, y, dx, dy)
-    return not imgui.love.GetWantCaptureMouse()
+    local canUseEvent = not imgui.love.GetWantCaptureMouse()
+    if canUseEvent then
+        Viewport:mousemoved(x, y, dx, dy)
+    end
+    return canUseEvent
 end
 
 function UI:wheelmoved (x, y)
