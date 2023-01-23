@@ -8,32 +8,22 @@ local NUMBYTES = 8
 
 -- expects that ImGuiInputTextFlags_CharsDecimal has been passed
 local function allowInteger (data)
-    if data.EventFlag == imgui.ImGuiInputTextFlags_CallbackAlways then
-        print(data.EventFlag, data.Flags, data.UserData, data.EventChar, data.EventKey, data. Buf, data.BufTextLen, data.BufSize, data.BufDirty, data.CursorPos, data.SelectionStart, data.SelectionEnd, "\n")
-        return 0
-    elseif data.EventFlag == imgui.ImGuiInputTextFlags_CallbackCharFilter then
-        local c = string.char(data.EventChar)
-        local buf = ffi.cast("char*", data.UserData)
-        local str = ffi.string(buf)
+    local c = string.char(data.EventChar)
+    local buf = ffi.cast("char*", data.UserData)
+    local str = ffi.string(buf)
 
-        if c == '-' then
-            if #str == 0 or #str == 1 then
-                return 0
-            end
+    -- TODO: handle negative values
+
+    local filter = {
+        '.', '+', '/', '*'
+    }
+    for i,bad in ipairs(filter) do
+        if c == bad then
             return 1
         end
-
-        local filter = {
-            '.', '+', '/', '*'
-        }
-        for i,bad in ipairs(filter) do
-            if c == bad then
-                return 1
-            end
-        end
-
-        return 0
     end
+
+    return 0
 end
 
 function BoxMenuInput.new ()

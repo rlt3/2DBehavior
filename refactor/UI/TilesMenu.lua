@@ -101,22 +101,6 @@ function TilesMenu:draw ()
         end
     end
 
-    -- TODO: Just hard-code the data that needs to be displayed and how to
-    -- update it. tile.name, tile.box, tile.isTraversable, etc.
-    --
-    -- In future, can create a template for serialization between saves, UI,
-    -- and the living object itself which can have custom types:
-    --  tile.tile -> Tile
-    --  tile.box -> Box
-    --  tile.isTraversable -> Bool
-    --
-    -- Right now, we can just hard-code the data-driven parts. So, create
-    -- functions for `Tile` and `Box` data on the UI side versus the World
-    -- side.
-    --
-    -- What's wrong with simply traversing the key,value pairs of an object
-    -- and picking the correct 'menu item' for the type of value?
-
     imgui.NewLine()
     if imgui.Button("Clear") then
         selected.tile = "none"
@@ -129,11 +113,12 @@ function TilesMenu:hasSelection ()
     return (selected ~= nil)
 end
 
-function TilesMenu:mousepressed (x, y, button)
-    selected = Map:lookupTile(x, y)
+function TilesMenu:mousepressed (Viewport, x, y, button)
+    local click = Viewport:screenToWorld(Box.new(x, y, 1))
+    selected = Map:lookupTile(click:position())
 end
 
-function TilesMenu:mousereleased (x, y, button)
+function TilesMenu:mousereleased (Viewport, x, y, button)
 end
 
 return TilesMenu

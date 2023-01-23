@@ -49,7 +49,7 @@ function UI:mousepressed (x, y, button)
             Viewport:dragStart()
         end
         if button == 1 then
-            TilesMenu:mousepressed(x, y, dx, dy)
+            TilesMenu:mousepressed(Viewport, x, y, dx, dy)
         end
     end
     return canUseEvent
@@ -63,7 +63,7 @@ function UI:mousereleased (x, y, button)
             Viewport:dragEnd()
         end
         if button == 1 then
-            TilesMenu:mousereleased(x, y, dx, dy)
+            TilesMenu:mousereleased(Viewport, x, y, dx, dy)
         end
     end
     return canUseEvent
