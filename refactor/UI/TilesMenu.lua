@@ -1,5 +1,6 @@
 local ffi = require('ffi')
 local Box = require('Utils/Box')
+local Tile = require('World/Tile')
 
 local BoxMenuInput = require('UI/BoxMenuInput')
 local BooleanMenuInput = require('UI/BooleanMenuInput')
@@ -79,16 +80,17 @@ function TilesMenu:draw ()
 
     beginWindow(imgui)
 
-    for k,v in pairs(selected) do
-        local t = type(v)
-        if isBox(v) then
+    for i,p in ipairs(Tile.Template) do
+        local k = p.key
+        local v = selected[k]
+        if p.type == "Box" then
             BoxInput:draw(selected, k, v)
-        elseif t == "string" then
-            StringInput:draw(selected, k, v)
-        elseif t == "boolean" then
+        elseif p.type == "Boolean" then
             BooleanInput:draw(selected, k, v)
+        elseif p.type == "Tile" then
+            StringInput:draw(selected, k, v)
         else
-            error("Unrecognized type: " .. type(v))
+            error("Unrecognized template pair: `" .. p.key .. "' -> `" .. p.type .. "'")
         end
     end
 
