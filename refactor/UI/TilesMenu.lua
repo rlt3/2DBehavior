@@ -2,9 +2,9 @@ local ffi = require('ffi')
 local Box = require('Utils/Box')
 local Tile = require('World/Tile')
 
-local BoxMenuInput = require('UI/BoxMenuInput')
-local BooleanMenuInput = require('UI/BooleanMenuInput')
-local StringMenuInput = require('UI/StringMenuInput')
+local BoxInput = require('UI/BoxInput')
+local BooleanInput = require('UI/BooleanInput')
+local StringInput = require('UI/StringInput')
 
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
@@ -13,16 +13,10 @@ local isOpen = ffi.new("bool[1]", true)
 
 -- references created at :init
 local Map
-local BoxInput
-local BooleanInput
-local StringInput
 
 function TilesMenu:init (_Map)
     Map = _Map
     selected = Map:lookupTile(0, 0)
-    BooleanInput = BooleanMenuInput.new()
-    BoxInput = BoxMenuInput.new()
-    StringInput = StringMenuInput.new()
 end
 
 local function beginWindow ()

@@ -1,18 +1,12 @@
 local ffi = require("ffi")
 
-local StringMenuInput = {}
-StringMenuInput.__index = StringMenuInput
-
 local MAXSTRLEN = 64
+local StringInput = {
+    buf = ffi.new("char[?]", MAXSTRLEN) -- zero initialized
+}
+StringInput.__index = StringInput
 
-function StringMenuInput.new ()
-    local t = {
-        buf = ffi.new("char[?]", MAXSTRLEN) -- zero initialized
-    }
-    return setmetatable(t, StringMenuInput)
-end
-
-function StringMenuInput:draw (selected, k, v)
+function StringInput:draw (selected, k, v)
     local flags = imgui.ImGuiInputTextFlags_AutoSelectAll
     local callback = ffi.cast("ImGuiInputTextCallback", allowInteger)
 
@@ -22,4 +16,4 @@ function StringMenuInput:draw (selected, k, v)
     end
 end
 
-return StringMenuInput
+return setmetatable(StringInput, StringInput)

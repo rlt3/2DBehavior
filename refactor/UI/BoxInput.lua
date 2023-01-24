@@ -1,10 +1,12 @@
 local Box = require('Utils/Box')
 local ffi = require('ffi')
 
-local BoxMenuInput = {}
-BoxMenuInput.__index = BoxMenuInput
-
 local NUMBYTES = 8
+local BoxInput = {
+    xbuf = ffi.new("char[?]", NUMBYTES),
+    ybuf = ffi.new("char[?]", NUMBYTES)
+}
+BoxInput.__index = BoxInput
 
 -- expects that ImGuiInputTextFlags_CharsDecimal has been passed
 local function allowInteger (data)
@@ -26,20 +28,12 @@ local function allowInteger (data)
     return 0
 end
 
-function BoxMenuInput.new ()
-    return setmetatable({
-        -- both are zero-initialized
-        xbuf = ffi.new("char[?]", NUMBYTES),
-        ybuf = ffi.new("char[?]", NUMBYTES)
-    }, BoxMenuInput)
-end
-
 local function updateSelected (selected, k, v, coord, value)
     if not value then return end
     selected[k].pos[coord] = value
 end
 
-function BoxMenuInput:draw (selected, k, v)
+function BoxInput:draw (selected, k, v)
     local flags = imgui.ImGuiInputTextFlags_CallbackCharFilter
                 + imgui.ImGuiInputTextFlags_CharsDecimal
                 + imgui.ImGuiInputTextFlags_AutoSelectAll
@@ -61,4 +55,4 @@ function BoxMenuInput:draw (selected, k, v)
     callback:free()
 end
 
-return BoxMenuInput
+return setmetatable(BoxInput, BoxInput)
