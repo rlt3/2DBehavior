@@ -5,10 +5,12 @@ local BooleanInput = {
 }
 BooleanInput.__index = BooleanInput
 
-function BooleanInput:draw (selected, k, v)
+function BooleanInput:draw (selected, allowInput, k, v)
     self.buf[0] = v
     if imgui.Checkbox(k, self.buf) then
-        selected[k] = not v
+        if allowInput then
+            selected[k] = not v
+        end
     end
 end
 

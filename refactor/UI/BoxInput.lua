@@ -33,11 +33,11 @@ local function updateSelected (selected, k, v, coord, value)
     selected[k].pos[coord] = value
 end
 
-function BoxInput:draw (selected, k, v)
+function BoxInput:draw (selected, allowInput, k, v)
     local flags = imgui.ImGuiInputTextFlags_CallbackCharFilter
                 + imgui.ImGuiInputTextFlags_CharsDecimal
-                + imgui.ImGuiInputTextFlags_AutoSelectAll
                 + imgui.ImGuiInputTextFlags_CharsNoBlank
+                + imgui.ImGuiInputTextFlags_AutoSelectAll
 
     --
     -- TODO: Moving a Box's position doesn't update the Map's lookup table.
@@ -47,10 +47,14 @@ function BoxInput:draw (selected, k, v)
     ffi.copy(self.xbuf, tostring(selected[k].pos.x))
     ffi.copy(self.ybuf, tostring(selected[k].pos.y))
     if imgui.InputText(k..".pos.x", self.xbuf, NUMBYTES, flags, callback) then
-        updateSelected(selected, k, v, "x", tonumber(ffi.string(self.xbuf)))
+        if allowInput then
+            updateSelected(selected, k, v, "x", tonumber(ffi.string(self.xbuf)))
+        end
     end
     if imgui.InputText(k..".pos.y", self.ybuf, NUMBYTES, flags, callback) then
-        updateSelected(selected, k, v, "y", tonumber(ffi.string(self.ybuf)))
+        if allowInput then
+            updateSelected(selected, k, v, "y", tonumber(ffi.string(self.ybuf)))
+        end
     end
     callback:free()
 end

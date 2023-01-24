@@ -4,12 +4,14 @@ local Tile = require('World/Tile')
 
 local BoxInput = require('UI/BoxInput')
 local BooleanInput = require('UI/BooleanInput')
-local StringInput = require('UI/StringInput')
+local TileInput = require('UI/TileInput')
 
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
 
 local isOpen = ffi.new("bool[1]", true)
+local lastSelected = nil
+local newSelection = false
 
 -- references created at :init
 local Map
@@ -72,25 +74,28 @@ end
 function TilesMenu:draw ()
     if not selected then return end
 
+    -- we only allow inputs, i.e. actually changing the selection's values,
+    -- when there's not just been a new selection. if the user highlights an
+    -- input box but then selects a new tile, the highlighted input will
+    -- trigger imgui's input procedure to return true, telling our functions
+    -- to update values. we stop that with this simple check.
+    local allowInput = not newSelection
+    newSelection = false
+
     beginWindow(imgui)
 
     for i,p in ipairs(Tile.Template) do
         local k = p.key
         local v = selected[k]
         if p.type == "Box" then
-            BoxInput:draw(selected, k, v)
+            BoxInput:draw(selected, allowInput, k, v)
         elseif p.type == "Boolean" then
-            BooleanInput:draw(selected, k, v)
+            BooleanInput:draw(selected, allowInput, k, v)
         elseif p.type == "Tile" then
-            StringInput:draw(selected, k, v)
+            TileInput:draw(selected, allowInput, k, v)
         else
             error("Unrecognized template pair: `" .. p.key .. "' -> `" .. p.type .. "'")
         end
-    end
-
-    imgui.NewLine()
-    if imgui.Button("Clear") then
-        selected.tile = "none"
     end
 
     endWindow()
@@ -110,6 +115,7 @@ end
 function TilesMenu:mousepressed (Viewport, x, y, button)
     local click = Viewport:screenToWorld(Box.new(x, y, 1))
     selected = Map:lookupTile(click:position())
+    newSelection = true
 end
 
 function TilesMenu:mousereleased (Viewport, x, y, button)
