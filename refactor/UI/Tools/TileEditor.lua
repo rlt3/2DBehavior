@@ -8,35 +8,6 @@ local TileEditor = {
 }
 TileEditor.__index = TileEditor
 
--- holds the master values applied to sets of tiles
-local master = {
-    tile = "none"
-}
-
-function drawMenu ()
-    local pos  = imgui.ImVec2_Float(0, 0)
-    local size = imgui.ImVec2_Float(400, 300)
-    -- allow the window to be moved wherever and have it remember that position
-    -- but always set the size and it cannot be resized
-    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
-    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
-
-    imgui.Begin("Tile Editor Menu", nil, flags)
-
-    TileInput:draw(master, true, "tile", master.tile)
-
-    imgui.NewLine()
-    if imgui.Button("Select & Fill Mode") then
-        print("fill")
-    end
-
-    if imgui.Button("Paintbrush Mode") then
-        print("paintbrush")
-    end
-
-    imgui.End()
-end
-
 local Rect = {}
 Rect.__index = Rect
 
@@ -134,6 +105,41 @@ function drawSelectionRect ()
     return false
 end
 
+-- holds the master values applied to sets of tiles
+local master = {
+    tile = "none"
+}
+
+function drawMenu ()
+    local pos  = imgui.ImVec2_Float(0, 0)
+    local size = imgui.ImVec2_Float(400, 300)
+    -- allow the window to be moved wherever and have it remember that position
+    -- but always set the size and it cannot be resized
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
+
+    imgui.Begin("Tile Editor Menu", nil, flags)
+
+    if TileInput:draw(master, true, "tile", master.tile) then
+        if tilesSelected then
+            for i,tile in ipairs(tilesSelected) do
+                tile.tile = master.tile
+            end
+        end
+    end
+
+    imgui.NewLine()
+    if imgui.Button("Select & Fill Mode") then
+        print("fill")
+    end
+
+    if imgui.Button("Paintbrush Mode") then
+        print("paintbrush")
+    end
+
+    imgui.End()
+end
+
 function TileEditor:draw (Viewport, Map)
     local isDone = drawSelectionRect()
 
@@ -155,7 +161,6 @@ function TileEditor:draw (Viewport, Map)
 
     if tilesSelected then
         for i,tile in ipairs(tilesSelected) do
-            tile.tile = master.tile
             love.graphics.setColor(1, 0, 0, 1)
             Viewport:worldToScreen(tile.box):draw()
             love.graphics.setColor(1, 1, 1, 1)
