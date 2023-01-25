@@ -2,20 +2,19 @@ local ffi = require('ffi')
 local Box = require('Utils/Box')
 local Tile = require('World/Tile')
 
-local BoxInput = require('UI/BoxInput')
-local BooleanInput = require('UI/BooleanInput')
-local TileInput = require('UI/TileInput')
+local BoxInput = require('UI/Inputs/BoxInput')
+local BooleanInput = require('UI/Inputs/BooleanInput')
+local TileInput = require('UI/Inputs/TileInput')
 
 local TilesMenu = {}
 TilesMenu.__index = TilesMenu
 
 local isOpen = ffi.new("bool[1]", true)
-local lastSelected = nil
 local newSelection = false
 
--- references created at :init
+-- reference created at :init
 local Map
-
+local selected
 function TilesMenu:init (_Map)
     Map = _Map
     selected = Map:lookupTile(0, 0)
@@ -26,7 +25,7 @@ local function beginWindow ()
     local size = imgui.ImVec2_Float(400, 300)
     -- allow the window to be moved wherever and have it remember that position
     -- but always set the size and it cannot be resized
-    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_Once)
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
     imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
 
     imgui.Begin("Tile Menu", TilesMenu.isOpen, flags)

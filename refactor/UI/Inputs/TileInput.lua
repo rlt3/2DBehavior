@@ -1,4 +1,4 @@
-local StringInput = require('UI/StringInput')
+local StringInput = require('UI/Inputs/StringInput')
 
 local ffi = require('ffi')
 
@@ -40,6 +40,7 @@ function TileInput:draw (selected, allowInput, k, v)
 
         if imgui.ImageButton("btn", Config.Tilesheet, size, uv0, uv1, bg_col, tint_col) then
             if allowInput then
+                -- TODO: not using k,v pair here
                 selected.tile = tile.id
                 selected.isTraversable = tile.isTraversable
             end
@@ -53,6 +54,7 @@ function TileInput:draw (selected, allowInput, k, v)
     imgui.NewLine()
     if imgui.Button("Clear Tile") then
         selected.tile = "none"
+        selected.isTraversable = true
     end
 end
 

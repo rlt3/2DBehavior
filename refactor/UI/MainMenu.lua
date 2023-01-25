@@ -27,16 +27,7 @@ local function endWindow (imgui)
     imgui.End()
 end
 
-local tools = {
-    { name = "Map Editor" },
-    { name = "Entity Editor" }
-}
-
-local selection = "none"
-
-function MainMenu:draw (imgui)
-    beginWindow(imgui)
-
+function drawMainMenu (tools, activeTool)
     if imgui.BeginMainMenuBar() then
         if imgui.BeginMenu("File") then
             if imgui.MenuItem_Bool("New") then
@@ -47,12 +38,17 @@ function MainMenu:draw (imgui)
         end
         if imgui.BeginMenu("Tools") then
             for i,tool in ipairs(tools) do
-                local isSelected = (selection == tool.name)
+                local isSelected
+                if not activeTool then
+                    isSelected = false
+                else
+                    isSelected = (activeTool.name == tool.name)
+                end
                 if imgui.MenuItem_Bool(tool.name, nil, isSelected) then
                     if isSelected then
-                        selection = "none"
+                        activeTool = nil
                     else
-                        selection = tool.name
+                        activeTool = tool
                     end
                 end
             end
@@ -60,8 +56,31 @@ function MainMenu:draw (imgui)
         end
         imgui.EndMenu()
     end
+    return activeTool
+end
+
+function drawExitToolMenu (activeTool)
+    if imgui.BeginMainMenuBar() then
+        if imgui.BeginMenu("<- Exit Tool") then
+            activeTool = nil
+            imgui.EndMenu()
+        end
+        imgui.EndMenu()
+    end
+    return activeTool
+end
+
+function MainMenu:draw (tools, activeTool)
+    beginWindow(imgui)
+
+    if activeTool then
+        activeTool = drawExitToolMenu(activeTool)
+    else
+        activeTool = drawMainMenu(tools, activeTool)
+    end
 
     endWindow(imgui)
+    return activeTool
 end
 
 return MainMenu

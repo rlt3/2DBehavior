@@ -9,6 +9,7 @@ local ffi = require('ffi')
 local Viewport = require("UI/Viewport")
 local MainMenu = require("UI/MainMenu")
 local TilesMenu = require("UI/TilesMenu")
+local TileEditor = require("UI/Tools/TileEditor")
 
 local UI = {}
 UI.__index = UI
@@ -19,22 +20,37 @@ function UI:init (World)
     self.Viewport = Viewport
     self.World = World
 
+    self.Tools = {
+        TileEditor,
+    }
+
     TilesMenu:init(World.Map)
 end
+
+-- TODO: had to make this a local var rather than a member I think because I'm
+-- allowing nil, not 100% sure. get a loop while indexing UI
+local activeTool = nil
 
 function UI:quit ()
     return imgui.love.Shutdown()
 end
 
 function UI:draw ()
-    imgui.ShowDemoWindow()
+    --imgui.ShowDemoWindow()
 
-    if TilesMenu:hasSelection() then
-        TilesMenu:drawSelection(Viewport)
+    -- Because our tools totally take over the UI while that tool is running,
+    -- we check on each frame whether or not to use the active tool or draw
+    -- the main UI
+    if not activeTool then
+        activeTool = MainMenu:draw(self.Tools, activeTool)
+        if TilesMenu:hasSelection() then
+            TilesMenu:drawSelection(Viewport)
+        end
+        TilesMenu:draw()
+    else
+        activeTool:draw()
+        activeTool = MainMenu:draw(self.Tools, activeTool)
     end
-
-    MainMenu:draw(imgui)
-    TilesMenu:draw()
 
     imgui.Render()
     imgui.love.RenderDrawLists()
