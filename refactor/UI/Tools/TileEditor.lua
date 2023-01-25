@@ -8,6 +8,14 @@ local TileEditor = {
 }
 TileEditor.__index = TileEditor
 
+local COLOR_BORDER = imgui.ImVec4_Float(0, 0.51, 0.84, 1.0)
+local COLOR_BACKGROUND = imgui.ImVec4_Float(0, 0.51, 0.84, 0.20)
+local master = { tile = "none" }
+local mode = "select"
+local selectionRect = nil
+local tilesSelected = nil
+local brushIsDown = false
+
 local Rect = {}
 Rect.__index = Rect
 
@@ -65,12 +73,6 @@ function Rect:botright ()
     return imgui.ImVec2_Float(self.reach.x, self.reach.y)
 end
 
-local COLOR_BORDER = imgui.ImVec4_Float(0, 0.51, 0.84, 1.0)
-local COLOR_BACKGROUND = imgui.ImVec4_Float(0, 0.51, 0.84, 0.20)
-
-local selectionRect = nil
-local tilesSelected = nil
-
 -- keeps a selection
 function drawSelectionRect ()
     if imgui.love.GetWantCaptureMouse() then return false end
@@ -105,42 +107,7 @@ function drawSelectionRect ()
     return false
 end
 
--- holds the master values applied to sets of tiles
-local master = {
-    tile = "none"
-}
-
-function drawMenu ()
-    local pos  = imgui.ImVec2_Float(0, 0)
-    local size = imgui.ImVec2_Float(400, 300)
-    -- allow the window to be moved wherever and have it remember that position
-    -- but always set the size and it cannot be resized
-    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
-    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
-
-    imgui.Begin("Tile Editor Menu", nil, flags)
-
-    if TileInput:draw(master, true, "tile", master.tile) then
-        if tilesSelected then
-            for i,tile in ipairs(tilesSelected) do
-                TileInput.updateTile(tile, master.tile, master.isTraversable)
-            end
-        end
-    end
-
-    imgui.NewLine()
-    if imgui.Button("Select & Fill Mode") then
-        print("fill")
-    end
-
-    if imgui.Button("Paintbrush Mode") then
-        print("paintbrush")
-    end
-
-    imgui.End()
-end
-
-function TileEditor:draw (Viewport, Map)
+function handleSelectMode (Viewport, Map)
     local isDone = drawSelectionRect()
 
     -- draw the selection rectangle while also updating the tiles selection
@@ -166,7 +133,69 @@ function TileEditor:draw (Viewport, Map)
             love.graphics.setColor(1, 1, 1, 1)
         end
     end
+end
 
+function handleBrushMode (Viewport, Map)
+    if imgui.love.GetWantCaptureMouse() then return false end
+
+    if imgui.IsMouseClicked(imgui.ImGuiMouseButton_Left) then
+        brushIsDown = true
+    end
+
+    if imgui.IsMouseReleased(imgui.ImGuiMouseButton_Left) then
+        brushIsDown = false
+    end
+
+    if brushIsDown then
+        local pos = imgui.GetMousePos()
+        local box = Box.new(pos.x, pos.y, Config.TileSize)
+        local tile = Map:lookupTile(Viewport:screenToWorld(box):position())
+        if tile then
+            TileInput.updateTile(tile, master.tile, master.isTraversable)
+        end
+    end
+end
+
+function drawMenu ()
+    local pos  = imgui.ImVec2_Float(0, 0)
+    local size = imgui.ImVec2_Float(400, 300)
+
+    -- allow the window to be moved wherever and have it remember that position
+    -- but always set the size and it cannot be resized
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
+
+    imgui.Begin("Tile Editor Menu", nil, flags)
+
+    imgui.Text("Current Mode: " .. mode)
+    if imgui.Button("Select & Fill Mode") then
+        mode = "select"
+    end
+    if imgui.Button("Paintbrush Mode") then
+        mode = "brush"
+    end
+
+    imgui.NewLine()
+
+    if TileInput:draw(master, true, "tile", master.tile) then
+        if mode == "select" then
+            if tilesSelected then
+                for i,tile in ipairs(tilesSelected) do
+                    TileInput.updateTile(tile, master.tile, master.isTraversable)
+                end
+            end
+        end
+    end
+
+    imgui.End()
+end
+
+function TileEditor:draw (Viewport, Map)
+    if mode == "select" then
+        handleSelectMode(Viewport, Map)
+    elseif mode == "brush" then
+        handleBrushMode(Viewport, Map)
+    end
     drawMenu()
 end
 
