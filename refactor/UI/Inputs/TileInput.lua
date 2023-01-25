@@ -38,7 +38,7 @@ function TileInput:draw (selected, allowInput, k, v)
         imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonActive, green)
         imgui.PushStyleColor_Vec4(imgui.ImGuiCol_ButtonHovered, white)
 
-        if imgui.ImageButton("btn", Config.Tilesheet, size, uv0, uv1, bg_col, tint_col) then
+        if imgui.ImageButton(tile.id, Config.Tilesheet, size, uv0, uv1, bg_col, tint_col) then
             if allowInput then
                 -- TODO: not using k,v pair here
                 selected.tile = tile.id
