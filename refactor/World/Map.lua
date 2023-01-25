@@ -70,14 +70,15 @@ function Map:serialize ()
     return tiles
 end
 
-local function screenToTileCoords (x, y)
+-- tiles are integer indexed at their top-left corner
+local function toTileCoords (x, y)
     return x - (x % Config.TileSize),
            y - (y % Config.TileSize)
 end
 
 -- select a single tile
 function Map:lookupTile (x, y)
-    x, y = screenToTileCoords(x, y)
+    x, y = toTileCoords(x, y)
 
     if self.TilesLookup[x] == nil then
         return nil
@@ -94,14 +95,21 @@ end
 
 -- select all tiles within a rectangle bounded by the vector coordinates
 function Map:selectTiles (topleft, botright)
-    local x1, y1 = screenToTileCoords(topleft.x, topleft.y)
-    local x2, y2 = screenToTileCoords(botright.x, botright.y)
+    local x1, y1 = toTileCoords(topleft.x, topleft.y)
+    local x2, y2 = toTileCoords(botright.x, botright.y)
 
     local tiles = {}
-    for x = x1, x2 do
-        for y = y1, y2 do
-            table.insert(tiles, self.TilesLookup[x][y])
+    for x = x1, x2, Config.TileSize do
+        if not self.TilesLookup[x] then
+            goto continue
         end
+        for y = y1, y2, Config.TileSize do
+            local t = self.TilesLookup[x][y]
+            if t then
+                table.insert(tiles, t)
+            end
+        end
+        ::continue::
     end
 
     return tiles

@@ -48,7 +48,7 @@ function UI:draw ()
         end
         TilesMenu:draw()
     else
-        activeTool:draw()
+        activeTool:draw(Viewport, self.World.Map)
         activeTool = MainMenu:draw(self.Tools, activeTool)
     end
 
