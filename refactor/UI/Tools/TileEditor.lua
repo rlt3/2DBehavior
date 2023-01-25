@@ -123,7 +123,7 @@ function drawMenu ()
     if TileInput:draw(master, true, "tile", master.tile) then
         if tilesSelected then
             for i,tile in ipairs(tilesSelected) do
-                tile.tile = master.tile
+                TileInput.updateTile(tile, master.tile, master.isTraversable)
             end
         end
     end

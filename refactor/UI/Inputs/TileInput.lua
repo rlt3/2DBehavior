@@ -8,10 +8,16 @@ local TileInput = {
 }
 TileInput.__index = TileInput
 
+--
+-- TODO: Side-stepping k,v pairs here from Template
+--
+function TileInput.updateTile (dest, tile, isTraversable)
+    dest.tile = tile
+    dest.isTraversable = isTraversable
+end
+
 function TileInput:draw (selected, allowInput, k, v)
     local isUpdated = false
-
-    StringInput:draw(selected, allowInput, k, v)
 
     local red = imgui.ImVec4_Float(0, 1, 0, 1)
     local black = imgui.ImVec4_Float(0, 0, 0, 0)
@@ -43,11 +49,7 @@ function TileInput:draw (selected, allowInput, k, v)
         if imgui.ImageButton(tile.id, Config.Tilesheet, size, uv0, uv1, bg_col, tint_col) then
             if allowInput then
                 isUpdated = true
-                selected[k] = tile.id
-                --
-                -- TODO: not using k,v pair here
-                --
-                selected.isTraversable = tile.isTraversable
+                self.updateTile(selected, tile.id, tile.isTraversable)
             end
         end
 
@@ -59,8 +61,7 @@ function TileInput:draw (selected, allowInput, k, v)
     imgui.NewLine()
     if imgui.Button("Clear Tile") then
         isUpdated = true
-        selected.tile = "none"
-        selected.isTraversable = true
+        self.updateTile(selected, "none", false)
     end
 
     return isUpdated
