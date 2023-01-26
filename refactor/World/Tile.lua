@@ -21,6 +21,13 @@ function Tile.new (x, y, w, h)
     return setmetatable(t, Tile)
 end
 
+-- Update the `tile` field using a template object.
+-- TODO: This is poorly named
+function Tile:updateTile (template)
+    self.tile = template.tile
+    self.isTraversable = template.isTraversable
+end
+
 function Tile:serialize ()
     local t = {}
     for i,p in ipairs(Tile.Template) do

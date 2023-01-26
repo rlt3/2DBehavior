@@ -28,8 +28,8 @@ function Map:init (saveData)
     local sz = Config.TileSize
     local w = Config.Tilesheet:getWidth()
     local h = Config.Tilesheet:getHeight()
-    for i,tile in ipairs(Config.Tiles) do
-        self.TileQuads[tile.id] = love.graphics.newQuad(tile.x, tile.y, sz, sz, w, h)
+    for i,template in ipairs(Config.Tiles) do
+        self.TileQuads[template.tile] = love.graphics.newQuad(template.x, template.y, sz, sz, w, h)
     end
     self.TilesetBatch = love.graphics.newSpriteBatch(Config.Tilesheet, Config.TileSize * Config.TileSize)
 end

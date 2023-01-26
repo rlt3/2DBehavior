@@ -10,11 +10,13 @@ TileEditor.__index = TileEditor
 
 local COLOR_BORDER = imgui.ImVec4_Float(0, 0.51, 0.84, 1.0)
 local COLOR_BACKGROUND = imgui.ImVec4_Float(0, 0.51, 0.84, 0.20)
-local master = { tile = "none" }
-local mode = "select"
+
 local selectionRect = nil
 local tilesSelected = nil
 local brushIsDown = false
+
+local master = Tile.new(0, 0, Config.TileSize)
+local mode = "select"
 
 local Rect = {}
 Rect.__index = Rect
@@ -151,7 +153,7 @@ function handleBrushMode (Viewport, Map)
         local box = Box.new(pos.x, pos.y, Config.TileSize)
         local tile = Map:lookupTile(Viewport:screenToWorld(box):position())
         if tile then
-            TileInput.updateTile(tile, master.tile, master.isTraversable)
+            tile:updateTile(master)
         end
     end
 end
@@ -181,7 +183,7 @@ function drawMenu ()
         if mode == "select" then
             if tilesSelected then
                 for i,tile in ipairs(tilesSelected) do
-                    TileInput.updateTile(tile, master.tile, master.isTraversable)
+                    tile:updateTile(master)
                 end
             end
         end
