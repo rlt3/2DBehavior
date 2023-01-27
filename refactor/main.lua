@@ -2,12 +2,17 @@ require("Config")
 local UI = require("UI/UI")
 local World = require("World/World")
 
+local Entity = require("World/Entity")
+
 function love.load ()
     World:init()
     UI:init(World)
 
     -- just set a sane default color early
     love.graphics.setColor(1, 1, 1, 1)
+
+    local e = Entity.new(80, 80)
+    World.Environment:add(e)
 end
 
 function love.quit ()

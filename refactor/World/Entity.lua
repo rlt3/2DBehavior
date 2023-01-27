@@ -9,21 +9,19 @@ Entity.Template = {
     { key = "speed", type = "Number" },
     { key = "animation", type = "Animation" },
     { key = "path", type = "Path" },
+    { key = "isIdle", type = "Boolean" },
 }
 
 function Entity.new (x, y)
     local e = {
         box = Box.new(x, y, Config.CharacterSize),
         speed = 3,
-
-        -- entity-specific animation data for each animation
-        animations = {},
-        -- animations are keyed on string names
-        currentAnimation = "walkDown",
+        animation = "walkDown", -- animations are keyed on string names
+        path = nil, -- path information represented as an array of nodes
         isIdle = true,
 
-        -- path information represented as an array of nodes
-        path = nil,
+        -- entity-specific animation data for each animation
+        animationIdx = {},
         pathIndex = 1,
         pathDt = 0,
     }
@@ -34,18 +32,43 @@ function Entity.new (x, y)
         -- is distinctly different than the method `animation:pauseAtEnd` which
         -- causes the animation to move to the last frame and then pause.
         local animation = anim8.newAnimation(g(data.range, data.row), data.speed, "pauseAtEnd")
-        e.animations[data.id] = animation
+        e.animationIdx[data.name] = animation
     end
 
     return setmetatable(e, Entity)
 end
 
---function Entity:draw (Viewport)
---    local x, y = Viewport:worldToScreen(self.bounds:position())
---    local animation = self.animations[self.currentAnimation]
---    animation:draw(Config.Charactersheet, x, y)
---end
---
+function Entity:draw (Viewport)
+    love.graphics.setColor(1, 0, 0, 1)
+    Viewport:worldToScreen(self.box):draw()
+    love.graphics.setColor(1, 1, 1, 1)
+
+    local x, y = Viewport:worldToScreen(self.box):position()
+    local animation = self.animationIdx[self.animation]
+    animation:draw(Config.Charactersheet, x, y)
+end
+
+function Entity:updateAnimation (dt)
+    local animation = self.animationIdx[self.animation]
+    -- use the last animation's sprite with no animating when idle
+    if self.isIdle then
+        animation:pause()
+        animation:gotoFrame(1)
+    elseif animation.status == "paused" then
+        -- TODO: not used for anything currently, but allows us to control
+        -- animation locking and waiting for animations to end before doing
+        -- something else
+        animation:gotoFrame(1)
+        animation:resume()
+    end
+    animation:update(dt)
+end
+
+function Entity:update (dt)
+    --self:updatePath(dt)
+    self:updateAnimation(dt)
+end
+
 --function lerp (from, to, t)
 --    return {
 --        x = (1 - t) * from.x + t * to.x,
@@ -121,27 +144,6 @@ end
 --    -- the entity's current position
 --    local pos = lerp(node, next, self.pathDt)
 --    self.bounds:setPosition(pos)
---end
---
---function Entity:updateAnimation (dt)
---    local animation = self.animations[self.currentAnimation]
---    -- use the last animation's sprite with no animating when idle
---    if self.isIdle then
---        animation:pause()
---        animation:gotoFrame(1)
---    elseif animation.status == "paused" then
---        -- TODO: not used for anything currently, but allows us to control
---        -- animation locking and waiting for animations to end before doing
---        -- something else
---        animation:gotoFrame(1)
---        animation:resume()
---    end
---    animation:update(dt)
---end
---
---function Entity:update (dt)
---    self:updatePath(dt)
---    self:updateAnimation(dt)
 --end
 
 return Entity
