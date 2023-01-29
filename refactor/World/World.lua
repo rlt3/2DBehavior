@@ -20,6 +20,7 @@ function World:resume ()
 end
 
 function World:update (dt)
+    Environment:update(dt)
 end
 
 function World:findPath (startTile, goalTile)

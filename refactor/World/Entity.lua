@@ -70,9 +70,11 @@ function Entity:update (dt)
 end
 
 function lerp (from, to, t)
+    local x1, y1 = from.box:position()
+    local x2, y2 = to.box:position()
     return {
-        x = (1 - t) * from.x + t * to.x,
-        y = (1 - t) * from.y + t * to.y,
+        x = (1 - t) * x1 + t * x2,
+        y = (1 - t) * y1 + t * y2,
     }
 end
 
@@ -89,7 +91,9 @@ function Entity:givePath (path)
     for i = 1, #path - 1 do
         local node = path[i]
         local next = path[i + 1]
-        local dir = { x = next.x - node.x, y = next.y - node.y }
+        local x1, y1 = next.box:position()
+        local x2, y2 = node.box:position()
+        local dir = { x = x1 - x2, y = y1 - y2 }
 
         if dir.x ~= 0 and dir.y ~= 0 then
             error("Expected cardinal directions")
@@ -108,8 +112,6 @@ function Entity:givePath (path)
             node.dir = { x = 0, y = -1 }
             node.animation = "walkUp"
         end
-
-        print(node.x, node.y, node.animation)
     end
 
     -- seed the initial movement

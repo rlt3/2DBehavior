@@ -21,9 +21,9 @@ function Box:copy ()
     return Box.new(self.pos.x, self.pos.y, self.w, self.h)
 end
 
-function Box:setPosition (x, y)
-    self.pos.x = x
-    self.pos.y = y
+function Box:setPosition (pos)
+    self.pos.x = pos.x
+    self.pos.y = pos.y
 end
 
 function Box:position ()
