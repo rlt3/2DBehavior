@@ -21,9 +21,9 @@ function Box:copy ()
     return Box.new(self.pos.x, self.pos.y, self.w, self.h)
 end
 
-function Box:addPosition (dx, dy)
-    self.pos.x = self.pos.x + dx
-    self.pos.y = self.pos.y + dy
+function Box:setPosition (x, y)
+    self.pos.x = x
+    self.pos.y = y
 end
 
 function Box:position ()
@@ -45,6 +45,10 @@ function Box:isPointInside (x, y)
        and r.y1 <= y
        and r.x2 >= x
        and r.y2 >= y
+end
+
+function Box:distance (other)
+    return Vector.distance(self.pos, other.pos)
 end
 
 function Box:intersects (other)

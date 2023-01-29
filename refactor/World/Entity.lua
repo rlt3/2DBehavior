@@ -65,85 +65,85 @@ function Entity:updateAnimation (dt)
 end
 
 function Entity:update (dt)
-    --self:updatePath(dt)
+    self:updatePath(dt)
     self:updateAnimation(dt)
 end
 
---function lerp (from, to, t)
---    return {
---        x = (1 - t) * from.x + t * to.x,
---        y = (1 - t) * from.y + t * to.y,
---    }
---end
---
---function Entity:givePath (path)
---    self.path = path
---    self.isIdle = false
---
---    if #self.path == 0 or #self.path == 1 then
---        error("Given invalid path of length " .. #self.path)
---    end
---
---    -- generate direction and animation information for the path at each node.
---    -- we stop at n-1 because each iteration processes n and n+1
---    for i = 1, #path - 1 do
---        local node = path[i]
---        local next = path[i + 1]
---        local dir = { x = next.x - node.x, y = next.y - node.y }
---
---        if dir.x ~= 0 and dir.y ~= 0 then
---            error("Expected cardinal directions")
---        end
---
---        if dir.x > 0 then
---            node.dir = { x = 1, y = 0 }
---            node.animation = "walkRight"
---        elseif dir.x < 0 then
---            node.dir = { x = -1, y = 0 }
---            node.animation = "walkLeft"
---        elseif dir.y > 0 then
---            node.dir = { x = 0, y = 1 }
---            node.animation = "walkDown"
---        elseif dir.y < 0 then
---            node.dir = { x = 0, y = -1 }
---            node.animation = "walkUp"
---        end
---
---        print(node.x, node.y, node.animation)
---    end
---
---    -- seed the initial movement
---    self.currentAnimation = self.path[1].animation
---end
---
---function Entity:updatePath (dt)
---    if not self.path then return end
---
---    local node = self.path[self.pathIndex]
---
---    -- we've hit the dest node. get the next node
---    if self.pathDt >= 1.0 then
---        self.pathDt = 0
---        self.pathIndex = self.pathIndex + 1
---
---        -- this only works in-between nodes, e.g. paths[3] 1->2, 2->3
---        if self.pathIndex == #self.path then
---            self.path = nil
---            self.isIdle = true
---            return
---        end
---
---        node = self.path[self.pathIndex]
---        self.currentAnimation = node.animation
---    end
---
---    local next = self.path[self.pathIndex + 1]
---    self.pathDt = self.pathDt + (self.speed * dt)
---
---    -- lerping only works using the original start & goal nodes regardless of
---    -- the entity's current position
---    local pos = lerp(node, next, self.pathDt)
---    self.bounds:setPosition(pos)
---end
+function lerp (from, to, t)
+    return {
+        x = (1 - t) * from.x + t * to.x,
+        y = (1 - t) * from.y + t * to.y,
+    }
+end
+
+function Entity:givePath (path)
+    self.path = path
+    self.isIdle = false
+
+    if #self.path == 0 or #self.path == 1 then
+        error("Given invalid path of length " .. #self.path)
+    end
+
+    -- generate direction and animation information for the path at each node.
+    -- we stop at n-1 because each iteration processes n and n+1
+    for i = 1, #path - 1 do
+        local node = path[i]
+        local next = path[i + 1]
+        local dir = { x = next.x - node.x, y = next.y - node.y }
+
+        if dir.x ~= 0 and dir.y ~= 0 then
+            error("Expected cardinal directions")
+        end
+
+        if dir.x > 0 then
+            node.dir = { x = 1, y = 0 }
+            node.animation = "walkRight"
+        elseif dir.x < 0 then
+            node.dir = { x = -1, y = 0 }
+            node.animation = "walkLeft"
+        elseif dir.y > 0 then
+            node.dir = { x = 0, y = 1 }
+            node.animation = "walkDown"
+        elseif dir.y < 0 then
+            node.dir = { x = 0, y = -1 }
+            node.animation = "walkUp"
+        end
+
+        print(node.x, node.y, node.animation)
+    end
+
+    -- seed the initial movement
+    self.animation = self.path[1].animation
+end
+
+function Entity:updatePath (dt)
+    if not self.path then return end
+
+    local node = self.path[self.pathIndex]
+
+    -- we've hit the dest node. get the next node
+    if self.pathDt >= 1.0 then
+        self.pathDt = 0
+        self.pathIndex = self.pathIndex + 1
+
+        -- this only works in-between nodes, e.g. paths[3] 1->2, 2->3
+        if self.pathIndex == #self.path then
+            self.path = nil
+            self.isIdle = true
+            return
+        end
+
+        node = self.path[self.pathIndex]
+        self.animation = node.animation
+    end
+
+    local next = self.path[self.pathIndex + 1]
+    self.pathDt = self.pathDt + (self.speed * dt)
+
+    -- lerping only works using the original start & goal nodes regardless of
+    -- the entity's current position
+    local pos = lerp(node, next, self.pathDt)
+    self.box:setPosition(pos)
+end
 
 return Entity

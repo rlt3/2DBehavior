@@ -14,7 +14,7 @@ function Tile.new (x, y, w, h)
 
     local t = {
         box = Box.new(x, y, w, h),
-        isTraversable = false,
+        isTraversable = true,
         tile = "none"
     }
 

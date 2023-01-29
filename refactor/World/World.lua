@@ -1,5 +1,6 @@
 local Map = require("World/Map")
 local Environment = require("World/Environment")
+require("libraries/astar")
 
 local World = {}
 World.__index = World
@@ -19,6 +20,20 @@ function World:resume ()
 end
 
 function World:update (dt)
+end
+
+function World:findPath (startTile, goalTile)
+    local validNeighbor = function(node, neighbor)
+        if not neighbor.isTraversable then
+            return false
+        end
+        if node.box:distance(neighbor.box) > Config.TileSize then
+            return false
+        end
+        return true
+    end
+
+    return astar.path(startTile, goalTile, Map.Tiles, true, validNeighbor)
 end
 
 function World:draw (Viewport)
