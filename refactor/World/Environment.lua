@@ -21,4 +21,13 @@ function Environment:update (dt)
     end
 end
 
+function Environment:lookupEntity (x, y)
+    for i,entity in ipairs(self.Entities) do
+        if entity.box:isPointInside(x, y) then
+            return entity
+        end
+    end
+    return nil
+end
+
 return Environment

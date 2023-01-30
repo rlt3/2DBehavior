@@ -17,7 +17,6 @@ local Map
 local selected
 function TilesMenu:init (_Map)
     Map = _Map
-    selected = Map:lookupTile(0, 0)
 end
 
 local function beginWindow ()
@@ -28,7 +27,7 @@ local function beginWindow ()
     imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
     imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
 
-    imgui.Begin("Tile Menu", TilesMenu.isOpen, flags)
+    imgui.Begin("Tile Menu", TilesMenu.isOpen, 0)
 end
 
 local function endWindow ()
@@ -46,7 +45,7 @@ function TilesMenu:draw ()
     local allowInput = not newSelection
     newSelection = false
 
-    beginWindow(imgui)
+    beginWindow()
 
     for i,p in ipairs(Tile.Template) do
         local k = p.key
@@ -76,13 +75,12 @@ function TilesMenu:drawSelection (Viewport)
     love.graphics.setColor(1, 1, 1, 1)
 end
 
-function TilesMenu:mousepressed (Viewport, x, y, button)
+function TilesMenu:mousepressed (Viewport, x, y)
     local click = Viewport:screenToWorld(Box.new(x, y, 1))
     selected = Map:lookupTile(click:position())
-    newSelection = true
-end
-
-function TilesMenu:mousereleased (Viewport, x, y, button)
+    if selected then
+        newSelection = true
+    end
 end
 
 return TilesMenu

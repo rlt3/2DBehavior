@@ -38,11 +38,11 @@ function Entity.new (x, y)
     return setmetatable(e, Entity)
 end
 
-function Entity:draw (Viewport)
-    love.graphics.setColor(1, 0, 0, 1)
-    Viewport:worldToScreen(self.box):draw()
-    love.graphics.setColor(1, 1, 1, 1)
+function Entity:__tostring ()
+    return "Entity @ " .. tostring(self.box)
+end
 
+function Entity:draw (Viewport)
     local x, y = Viewport:worldToScreen(self.box):position()
     local animation = self.animationIdx[self.animation]
     animation:draw(Config.Charactersheet, x, y)

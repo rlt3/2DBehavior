@@ -9,6 +9,8 @@ local ffi = require('ffi')
 local Viewport = require("UI/Viewport")
 local MainMenu = require("UI/MainMenu")
 local TilesMenu = require("UI/TilesMenu")
+local EntityMenu = require("UI/EntityMenu")
+
 local TileEditor = require("UI/Tools/TileEditor")
 
 local UI = {}
@@ -25,6 +27,7 @@ function UI:init (World)
     }
 
     TilesMenu:init(World.Map)
+    EntityMenu:init(World.Environment)
 end
 
 -- TODO: had to make this a local var rather than a member I think because I'm
@@ -43,10 +46,16 @@ function UI:draw ()
     -- the main UI
     if not activeTool then
         activeTool = MainMenu:draw(self.Tools, activeTool)
-        if TilesMenu:hasSelection() then
+
+        -- We draw one menu at a time, based on selection and order of
+        -- importance, to keep the number of menus at a minimum.
+        if EntityMenu:hasSelection() then
+            EntityMenu:drawSelection(Viewport)
+            EntityMenu:draw()
+        elseif TilesMenu:hasSelection() then
             TilesMenu:drawSelection(Viewport)
+            TilesMenu:draw()
         end
-        TilesMenu:draw()
     else
         activeTool:draw(Viewport, self.World.Map)
         activeTool = MainMenu:draw(self.Tools, activeTool)
@@ -70,6 +79,7 @@ function UI:mousepressed (x, y, button)
         end
         if button == 1 then
             TilesMenu:mousepressed(Viewport, x, y, dx, dy)
+            EntityMenu:mousepressed(Viewport, x, y, dx, dy)
         end
     end
     return canUseEvent
@@ -81,9 +91,6 @@ function UI:mousereleased (x, y, button)
     if canUseEvent then
         if button == 3 then
             Viewport:dragEnd()
-        end
-        if button == 1 then
-            TilesMenu:mousereleased(Viewport, x, y, dx, dy)
         end
     end
     return canUseEvent
