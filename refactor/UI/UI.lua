@@ -6,10 +6,16 @@ imgui = require("Libraries/cimgui")
 local nativefs = require("Libraries/nativefs")
 local ffi = require('ffi')
 
+local Box = require("Utils/Box")
+local Entity = require('World/Entity')
+local Tile = require('World/Tile')
+
 local Viewport = require("UI/Viewport")
 local MainMenu = require("UI/MainMenu")
-local TilesMenu = require("UI/TilesMenu")
-local EntityMenu = require("UI/EntityMenu")
+
+local BoxInput = require('UI/Inputs/BoxInput')
+local BooleanInput = require('UI/Inputs/BooleanInput')
+local TileInput = require('UI/Inputs/TileInput')
 
 local TileEditor = require("UI/Tools/TileEditor")
 
@@ -25,17 +31,62 @@ function UI:init (World)
     self.Tools = {
         TileEditor,
     }
+    self.activeTool = nil
 
-    TilesMenu:init(World.Map)
-    EntityMenu:init(World.Environment)
+    self.selection = nil
+    self.isSelectionNew = false
 end
-
--- TODO: had to make this a local var rather than a member I think because I'm
--- allowing nil, not 100% sure. get a loop while indexing UI
-local activeTool = nil
 
 function UI:quit ()
     return imgui.love.Shutdown()
+end
+
+function UI:drawSelection ()
+    love.graphics.setColor(1, 0, 0, 1)
+    Viewport:worldToScreen(self.selection.box):draw()
+    love.graphics.setColor(1, 1, 1, 1)
+end
+
+function UI:selectionIsType (t)
+    return type(self.selection) == "table" and getmetatable(self.selection) == t
+end
+
+function UI:handleSelection (x, y)
+    local click = Viewport:screenToWorld(Box.new(x, y, 1))
+    local selected
+
+    self.selection = self.World.Environment:lookupEntity(click:position())
+    if self.selection then return end
+    self.selection = self.World.Map:lookupTile(click:position())
+end
+
+function UI:drawSelectionMenu (template)
+    local pos  = imgui.ImVec2_Float(0, 0)
+    local size = imgui.ImVec2_Float(400, 300)
+    -- allow the window to be moved wherever and have it remember that position
+    -- but always set the size and it cannot be resized
+    imgui.SetNextWindowPos(pos, imgui.ImGuiCond_FirstUseEver)
+    imgui.SetNextWindowSize(size, imgui.ImGuiCond_Always)
+    imgui.Begin("Selection Menu", nil, 0)
+
+    local allowInput = not self.isSelectionNew
+    self.isSelectionNew = false
+
+    for i,p in ipairs(template) do
+        local k = p.key
+        local v = self.selection[k]
+        if p.type == "Box" then
+            BoxInput:draw(self.selection, allowInput, k, v)
+        elseif p.type == "Boolean" then
+            BooleanInput:draw(self.selection, allowInput, k, v)
+        elseif p.type == "Tile" then
+            TileInput:draw(self.selection, allowInput, k, v)
+        else
+            --error("Unrecognized template pair: `" .. p.key .. "' -> `" .. p.type .. "'")
+        end
+    end
+
+    imgui.End()
 end
 
 function UI:draw ()
@@ -44,21 +95,20 @@ function UI:draw ()
     -- Because our tools totally take over the UI while that tool is running,
     -- we check on each frame whether or not to use the active tool or draw
     -- the main UI
-    if not activeTool then
-        activeTool = MainMenu:draw(self.Tools, activeTool)
+    if not self.activeTool then
+        self.activeTool = MainMenu:draw(self.Tools, self.activeTool)
 
-        -- We draw one menu at a time, based on selection and order of
-        -- importance, to keep the number of menus at a minimum.
-        if EntityMenu:hasSelection() then
-            EntityMenu:drawSelection(Viewport)
-            EntityMenu:draw()
-        elseif TilesMenu:hasSelection() then
-            TilesMenu:drawSelection(Viewport)
-            TilesMenu:draw()
+        if self.selection then
+            self:drawSelection()
+            if self:selectionIsType(Entity) then
+                self:drawSelectionMenu(Entity.Template)
+            elseif self:selectionIsType(Tile) then
+                self:drawSelectionMenu(Tile.Template)
+            end
         end
     else
-        activeTool:draw(Viewport, self.World.Map)
-        activeTool = MainMenu:draw(self.Tools, activeTool)
+        self.activeTool:draw(Viewport, self.World.Map)
+        self.activeTool = MainMenu:draw(self.Tools, self.activeTool)
     end
 
     imgui.Render()
@@ -78,8 +128,7 @@ function UI:mousepressed (x, y, button)
             Viewport:dragStart()
         end
         if button == 1 then
-            TilesMenu:mousepressed(Viewport, x, y, dx, dy)
-            EntityMenu:mousepressed(Viewport, x, y, dx, dy)
+            self:handleSelection(x, y)
         end
     end
     return canUseEvent
@@ -125,4 +174,4 @@ function UI:textinput (t)
     return imgui.love.GetWantTextInput()
 end
 
-return setmetatable(UI, UI)
+return UI

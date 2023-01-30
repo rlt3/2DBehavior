@@ -16,10 +16,8 @@ function love.load ()
 
     local a = World.Map:lookupTile(0, 0)
     local b = World.Map:lookupTile(192, 192)
-    print(a, b)
 
     local path = World:findPath(a, b)
-    print(path)
     e:givePath(path)
 end
 
