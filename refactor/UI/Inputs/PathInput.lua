@@ -13,7 +13,7 @@ function PathInput:draw (UI, selected, allowInput, k, v)
     local Map = World.Map
     local Viewport = UI.Viewport
 
-    imgui.Button("Select Goal Tile")
+    imgui.Button("Click & Drag to Select")
     if imgui.BeginDragDropSource(imgui.ImGuiDragDropFlags_None) then
         -- use dragging and dropping to find a goal
         local pos = imgui.GetMousePos()
@@ -32,20 +32,14 @@ function PathInput:draw (UI, selected, allowInput, k, v)
         -- if not dragging-and-dropping right now, but a goal was selected
         local start = Map:lookupTile(selected.box:position())
         local path = World:findPath(start, goal)
-        print("Giving entity new path: " .. tostring(start) .. " -> " .. tostring(goal) .. " | " .. tostring(path))
-        --if path then
-        --    print("Giving entity new path: " .. tostring(start) .. " -> " .. tostring(goal))
-        --    --selected:givePath(path)
-        --end
+        if path then
+            selected:givePath(path)
+        end
         goal = nil
     end
 
     imgui.SameLine()
-    if goal then
-        imgui.Text("Goal: " .. tostring(goal))
-    else
-        imgui.Text("No goal selected")
-    end
+    imgui.Text("Path Goal")
 end
 
 return PathInput

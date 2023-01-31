@@ -13,12 +13,6 @@ function love.load ()
 
     local e = Entity.new(80, 80)
     World.Environment:add(e)
-
-    local a = World.Map:lookupTile(0, 0)
-    local b = World.Map:lookupTile(192, 192)
-
-    local path = World:findPath(a, b)
-    e:givePath(path)
 end
 
 function love.quit ()

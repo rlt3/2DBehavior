@@ -84,6 +84,8 @@ end
 
 function Entity:givePath (path)
     self.path = path
+    self.pathIndex = 1
+    self.pathDt = 0
     self.isIdle = false
 
     if #self.path == 0 or #self.path == 1 then
