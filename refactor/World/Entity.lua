@@ -78,6 +78,10 @@ function lerp (from, to, t)
     }
 end
 
+function Entity:hasPath ()
+    return self.path ~= nil
+end
+
 function Entity:givePath (path)
     self.path = path
     self.isIdle = false

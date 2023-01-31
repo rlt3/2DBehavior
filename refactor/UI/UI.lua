@@ -16,6 +16,7 @@ local MainMenu = require("UI/MainMenu")
 local BoxInput = require('UI/Inputs/BoxInput')
 local BooleanInput = require('UI/Inputs/BooleanInput')
 local TileInput = require('UI/Inputs/TileInput')
+local PathInput = require('UI/Inputs/PathInput')
 
 local TileEditor = require("UI/Tools/TileEditor")
 
@@ -81,6 +82,8 @@ function UI:drawSelectionMenu (template)
             BooleanInput:draw(self.selection, allowInput, k, v)
         elseif p.type == "Tile" then
             TileInput:draw(self.selection, allowInput, k, v)
+        elseif p.type == "Path" then
+            PathInput:draw(self, self.selection, allowInput, k, v)
         else
             --error("Unrecognized template pair: `" .. p.key .. "' -> `" .. p.type .. "'")
         end
@@ -90,7 +93,7 @@ function UI:drawSelectionMenu (template)
 end
 
 function UI:draw ()
-    --imgui.ShowDemoWindow()
+    imgui.ShowDemoWindow()
 
     -- Because our tools totally take over the UI while that tool is running,
     -- we check on each frame whether or not to use the active tool or draw
