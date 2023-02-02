@@ -1,12 +1,15 @@
 require("Config")
 local UI = require("UI/UI")
 local World = require("World/World")
+local Persist = require("Persist/Persist")
 
 local Entity = require("World/Entity")
 
 function love.load ()
     World:init()
     UI:init(World)
+
+    Persist:load(World)
 
     -- just set a sane default color early
     love.graphics.setColor(1, 1, 1, 1)
@@ -16,6 +19,7 @@ function love.load ()
 end
 
 function love.quit ()
+    Persist:save(World)
     UI:quit()
 end
 
