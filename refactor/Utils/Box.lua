@@ -17,6 +17,10 @@ function Box.new (x, y, w, h)
     return setmetatable(t, Box)
 end
 
+function Box:serialize ()
+    return { x = self.pos.x, y = self.pos.y, w = self.w, h = self.h }
+end
+
 function Box:copy ()
     return Box.new(self.pos.x, self.pos.y, self.w, self.h)
 end

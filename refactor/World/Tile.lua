@@ -31,14 +31,23 @@ end
 function Tile:serialize ()
     local t = {}
     for i,p in ipairs(Tile.Template) do
-        t[p.key] = self[p.key]
+        if p.type == "Box" then
+            t[p.key] = self[p.key]:serialize()
+        else
+            t[p.key] = self[p.key]
+        end
     end
     return t
 end
 
 function Tile:deserialize (t)
     for i,p in ipairs(Tile.Template) do
-        self[p.key] = t[p.key]
+        if p.type == "Box" then
+            local b = t[p.key]
+            self[p.key] = Box.new(b.x, b.y, b.w, b.h)
+        else
+            self[p.key] = t[p.key]
+        end
     end
 end
 

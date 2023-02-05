@@ -14,8 +14,8 @@ function love.load ()
     -- just set a sane default color early
     love.graphics.setColor(1, 1, 1, 1)
 
-    local e = Entity.new(80, 80)
-    World.Environment:add(e)
+    --local e = Entity.new(80, 80)
+    --World.Environment:add(e)
 end
 
 function love.quit ()

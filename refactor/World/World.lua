@@ -24,6 +24,10 @@ function World:update (dt)
 end
 
 function World:findPath (startTile, goalTile)
+    --print(startTile.box)
+    --print(goalTile.box)
+    --print(startTile.box:distance(goalTile))
+    --return nil
     local validNeighbor = function(node, neighbor)
         if not neighbor.isTraversable then
             return false

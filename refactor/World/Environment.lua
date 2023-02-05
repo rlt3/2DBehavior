@@ -1,8 +1,27 @@
+local Entity = require("World/Entity")
+
 local Environment = {}
 Environment.__index = Environment
 
 function Environment:init ()
     self.Entities = {}
+end
+
+-- create base Entities and then load the data into them
+function Environment:load (data)
+    for i,d in ipairs(data) do
+        local entity = Entity.new(0, 0)
+        entity:deserialize(d)
+        table.insert(self.Entities, entity)
+    end
+end
+
+function Environment:serialize ()
+    local data = {}
+    for i,e in ipairs(self.Entities) do
+        table.insert(data, e:serialize())
+    end
+    return data
 end
 
 function Environment:add (entity)

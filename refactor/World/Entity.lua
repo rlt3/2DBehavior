@@ -42,6 +42,20 @@ function Entity:__tostring ()
     return "Entity @ " .. tostring(self.box)
 end
 
+function Entity:serialize ()
+    local t = {}
+    for i,p in ipairs(Entity.Template) do
+        t[p.key] = self[p.key]
+    end
+    return t
+end
+
+function Entity:deserialize (t)
+    for i,p in ipairs(Entity.Template) do
+        self[p.key] = t[p.key]
+    end
+end
+
 function Entity:draw (Viewport)
     local x, y = Viewport:worldToScreen(self.box):position()
     local animation = self.animationIdx[self.animation]
