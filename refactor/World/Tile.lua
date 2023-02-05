@@ -33,6 +33,7 @@ function Tile:serialize ()
     for i,p in ipairs(Tile.Template) do
         t[p.key] = self[p.key]
     end
+    return t
 end
 
 function Tile:deserialize (t)

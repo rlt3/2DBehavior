@@ -17,12 +17,8 @@ function Map:init (saveData)
     self.TilesetBatch = nil
     self.TileQuads = {}
 
-    -- create or load the initial tiles
-    --if saveData then
-    --    self:load(saveData)
-    --else
-        self:create()
-    --end
+    -- create the initial tiles
+    self:create()
 
     -- create a single source of tile quads to draw as a batch
     local sz = Config.TileSize
@@ -47,7 +43,24 @@ function Map:create ()
     end
 end
 
-function Map:load (saveData)
+-- Using the existing Tile objects, load in the saved data. The saved data is
+-- in a specific order that's maintained
+function Map:load (data)
+    if #self.Tiles ~= #data then
+        error("Invalid length for map save data!")
+    end
+    for i,tile in ipairs(self.Tiles) do
+        tile:deserialize(data[i])
+    end
+end
+
+-- Serialize the map data ordered using ipairs
+function Map:serialize ()
+    local data = {}
+    for i,t in ipairs(self.Tiles) do
+        table.insert(data, t:serialize())
+    end
+    return data
 end
 
 function Map:draw (Viewport)
@@ -59,15 +72,6 @@ function Map:draw (Viewport)
     end
     self.TilesetBatch:flush()
     love.graphics.draw(self.TilesetBatch)
-end
-
-function Map:serialize ()
-    local tiles = {}
-    -- ipairs ensures order so if `id' ever becomes important...
-    for i,t in ipairs(self.Tiles) do
-        table.insert(tiles, t:serialize())
-    end
-    return tiles
 end
 
 -- tiles are integer indexed at their top-left corner

@@ -4,6 +4,7 @@ Config = {
     --ini = ini,
     MapWidth = 100,
     MapHeight = 100,
+    SaveFile = love.filesystem.getSaveDirectory() .. "/world.save",
     Charactersheet = love.graphics.newImage("Assets/character.png"),
     CharacterSize = 64,
     CharacterAnimations = {
