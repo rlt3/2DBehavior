@@ -1,5 +1,6 @@
 local Box = require("Utils/Box")
 local anim8 = require("Libraries/anim8")
+require("Utils/Serialize")
 
 local Entity = {}
 Entity.__index = Entity
@@ -43,17 +44,11 @@ function Entity:__tostring ()
 end
 
 function Entity:serialize ()
-    local t = {}
-    for i,p in ipairs(Entity.Template) do
-        t[p.key] = self[p.key]
-    end
-    return t
+    return Serialize(self, Entity.Template)
 end
 
-function Entity:deserialize (t)
-    for i,p in ipairs(Entity.Template) do
-        self[p.key] = t[p.key]
-    end
+function Entity:deserialize (data)
+    Deserialize(self, data, Entity.Template)
 end
 
 function Entity:draw (Viewport)
