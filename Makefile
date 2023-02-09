@@ -1,2 +1,2 @@
 all:
-	./lovec.exe world
+	./Love2D/lovec.exe World/
