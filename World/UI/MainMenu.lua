@@ -1,3 +1,5 @@
+local Entity = require('World/Entity')
+
 local MainMenu = {}
 MainMenu.__index = MainMenu
 
@@ -27,7 +29,7 @@ local function endWindow (imgui)
     imgui.End()
 end
 
-function drawMainMenu (tools, activeTool)
+function drawMainMenu (tools, activeTool, World)
     if imgui.BeginMainMenuBar() then
         if imgui.BeginMenu("File") then
             if imgui.MenuItem_Bool("New") then
@@ -54,6 +56,12 @@ function drawMainMenu (tools, activeTool)
             end
             imgui.EndMenu()
         end
+        if imgui.BeginMenu("Create") then
+            if imgui.MenuItem_Bool("Entity") then
+                World.Environment:add(Entity.new(0, 0))
+            end
+            imgui.EndMenu()
+        end
         imgui.EndMenu()
     end
     return activeTool
@@ -70,13 +78,13 @@ function drawExitToolMenu (activeTool)
     return activeTool
 end
 
-function MainMenu:draw (tools, activeTool)
+function MainMenu:draw (tools, activeTool, World)
     beginWindow(imgui)
 
     if activeTool then
         activeTool = drawExitToolMenu(activeTool)
     else
-        activeTool = drawMainMenu(tools, activeTool)
+        activeTool = drawMainMenu(tools, activeTool, World)
     end
 
     endWindow(imgui)

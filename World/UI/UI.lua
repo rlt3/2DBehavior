@@ -93,13 +93,13 @@ function UI:drawSelectionMenu (template)
 end
 
 function UI:draw ()
-    imgui.ShowDemoWindow()
+    --imgui.ShowDemoWindow()
 
     -- Because our tools totally take over the UI while that tool is running,
     -- we check on each frame whether or not to use the active tool or draw
     -- the main UI
     if not self.activeTool then
-        self.activeTool = MainMenu:draw(self.Tools, self.activeTool)
+        self.activeTool = MainMenu:draw(self.Tools, self.activeTool, self.World)
 
         if self.selection then
             self:drawSelection()
@@ -111,7 +111,7 @@ function UI:draw ()
         end
     else
         self.activeTool:draw(Viewport, self.World.Map)
-        self.activeTool = MainMenu:draw(self.Tools, self.activeTool)
+        self.activeTool = MainMenu:draw(self.Tools, self.activeTool, self.World)
     end
 
     imgui.Render()
